@@ -2,11 +2,7 @@
 
 namespace App\Filament\Resources\AttendanceRecaps;
 
-use App\Filament\Resources\AttendanceRecaps\Pages\CreateAttendanceRecap;
-use App\Filament\Resources\AttendanceRecaps\Pages\EditAttendanceRecap;
 use App\Filament\Resources\AttendanceRecaps\Pages\ListAttendanceRecaps;
-use App\Filament\Resources\AttendanceRecaps\Schemas\AttendanceRecapForm;
-use App\Filament\Resources\AttendanceRecaps\Tables\AttendanceRecapsTable;
 use App\Models\AttendanceRecap;
 use BackedEnum;
 use Filament\Resources\Resource;
@@ -20,16 +16,29 @@ class AttendanceRecapResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
-    protected static ?string $recordTitleAttribute = 'AttendanceRecap';
+    protected static ?string $recordTitleAttribute = 'academic_year';
 
     public static function form(Schema $schema): Schema
     {
-        return AttendanceRecapForm::configure($schema);
+        return $schema->components([]);
     }
 
     public static function table(Table $table): Table
     {
-        return AttendanceRecapsTable::configure($table);
+        return $table
+            ->columns([
+                \Filament\Tables\Columns\TextColumn::make('type'),
+                \Filament\Tables\Columns\TextColumn::make('period_start')->date(),
+                \Filament\Tables\Columns\TextColumn::make('period_end')->date(),
+                \Filament\Tables\Columns\TextColumn::make('month')->numeric(),
+                \Filament\Tables\Columns\TextColumn::make('academic_year'),
+                \Filament\Tables\Columns\TextColumn::make('semester'),
+                \Filament\Tables\Columns\TextColumn::make('generated_by')->numeric(),
+                \Filament\Tables\Columns\TextColumn::make('generated_at')->dateTime(),
+            ])
+            ->filters([])
+            ->recordActions([])
+            ->toolbarActions([]);
     }
 
     public static function getRelations(): array
@@ -43,8 +52,26 @@ class AttendanceRecapResource extends Resource
     {
         return [
             'index' => ListAttendanceRecaps::route('/'),
-            'create' => CreateAttendanceRecap::route('/create'),
-            'edit' => EditAttendanceRecap::route('/{record}/edit'),
         ];
+    }
+
+    public static function canCreate(): bool
+    {
+        return false;
+    }
+
+    public static function canEdit(\Illuminate\Database\Eloquent\Model $record): bool
+    {
+        return false;
+    }
+
+    public static function canDeleteAny(): bool
+    {
+        return false;
+    }
+
+    public static function canDelete(\Illuminate\Database\Eloquent\Model $record): bool
+    {
+        return false;
     }
 }

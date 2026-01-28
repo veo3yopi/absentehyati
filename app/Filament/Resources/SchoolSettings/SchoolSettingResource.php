@@ -20,7 +20,7 @@ class SchoolSettingResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
-    protected static ?string $recordTitleAttribute = 'SchoolSetting';
+    protected static ?string $recordTitleAttribute = 'school_name';
 
     public static function form(Schema $schema): Schema
     {
@@ -46,5 +46,20 @@ class SchoolSettingResource extends Resource
             'create' => CreateSchoolSetting::route('/create'),
             'edit' => EditSchoolSetting::route('/{record}/edit'),
         ];
+    }
+
+    public static function canCreate(): bool
+    {
+        return SchoolSetting::query()->count() === 0;
+    }
+
+    public static function canDeleteAny(): bool
+    {
+        return false;
+    }
+
+    public static function canDelete(\Illuminate\Database\Eloquent\Model $record): bool
+    {
+        return false;
     }
 }
