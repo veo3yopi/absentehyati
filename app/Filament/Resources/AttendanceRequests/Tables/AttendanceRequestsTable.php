@@ -67,7 +67,9 @@ class AttendanceRequestsTable
                 Action::make('approve')
                     ->label('Setujui')
                     ->color('success')
-                    ->visible(fn (AttendanceRequest $record): bool => $record->status === AttendanceRequest::STATUS_PENDING)
+                    ->visible(fn (AttendanceRequest $record): bool => $record->status === AttendanceRequest::STATUS_PENDING
+                        && $record->check_in_submitted
+                        && $record->check_out_submitted)
                     ->action(function (AttendanceRequest $record): void {
                         if ($record->status !== AttendanceRequest::STATUS_PENDING) {
                             return;

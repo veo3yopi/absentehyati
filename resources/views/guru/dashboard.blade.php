@@ -14,7 +14,8 @@
         label { display:block; margin: 10px 0 6px; font-size: 14px; }
         input, select, textarea { width: 100%; padding: 10px; border: 1px solid #d7dbe6; border-radius: 6px; }
         textarea { min-height: 80px; }
-        button { margin-top: 12px; padding: 10px 16px; border: 0; border-radius: 6px; background: #1f6feb; color: #fff; font-weight: 600; }
+        button { margin-top: 12px; padding: 10px 16px; border: 0; border-radius: 6px; background: #1f6feb; color: #fff; font-weight: 600; cursor: pointer; }
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
         table { width: 100%; border-collapse: collapse; font-size: 14px; }
         th, td { border-bottom: 1px solid #eee; padding: 8px; text-align: left; }
         .badge { padding: 2px 8px; border-radius: 999px; font-size: 12px; }
@@ -24,6 +25,8 @@
         .error { color: #b91c1c; font-size: 13px; margin-top: 6px; }
         .status { color: #065f46; background: #d1fae5; padding: 8px 12px; border-radius: 6px; margin-bottom: 12px; }
         .grid { display:grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .tabs button { background: #e5e7eb; color: #111827; margin-top: 0; }
+        .tabs button.active { background: #111827; color: #fff; }
         @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
     </style>
 </head>
@@ -42,35 +45,65 @@
     </div>
 
     <div class="card">
-        <h2>Ajukan Absensi</h2>
+        <h2>Absensi Hari Ini</h2>
         @if (session('status'))
             <div class="status">{{ session('status') }}</div>
         @endif
-        <form method="post" action="{{ route('guru.absen.store') }}">
-            @csrf
-            <label>Tanggal</label>
-            <input type="date" name="date" value="{{ old('date', now()->toDateString()) }}" required>
-            @error('date')<div class="error">{{ $message }}</div>@enderror
 
-            <label>Status Masuk</label>
-            <select name="check_in_status" required>
-                @foreach (['H' => 'Hadir', 'S' => 'Sakit', 'I' => 'Izin', 'A' => 'Alfa'] as $k => $v)
-                    <option value="{{ $k }}" @selected(old('check_in_status', 'H') === $k)>{{ $v }}</option>
-                @endforeach
-            </select>
+        <div class="tabs" style="display:flex; gap:8px; margin-bottom:12px;">
+            <button type="button" id="tab-in" class="active">Absen Masuk</button>
+            <button type="button" id="tab-out" {{ $canCheckOut ? '' : 'disabled' }}>Absen Pulang</button>
+        </div>
 
-            <label>Status Pulang</label>
-            <select name="check_out_status" required>
-                @foreach (['H' => 'Hadir', 'S' => 'Sakit', 'I' => 'Izin', 'A' => 'Alfa'] as $k => $v)
-                    <option value="{{ $k }}" @selected(old('check_out_status', 'H') === $k)>{{ $v }}</option>
-                @endforeach
-            </select>
+        <div id="panel-in">
+            <form method="post" action="{{ route('guru.absen.store') }}">
+                @csrf
+                <input type="hidden" name="type" value="in">
+                <label>Tanggal</label>
+                <input type="date" name="date" value="{{ old('date', now()->toDateString()) }}" min="{{ now()->toDateString() }}" max="{{ now()->toDateString() }}" required>
+                @error('date')<div class="error">{{ $message }}</div>@enderror
 
-            <label>Alasan (opsional)</label>
-            <textarea name="reason">{{ old('reason') }}</textarea>
+                <label>Status Masuk</label>
+                <select name="check_in_status" required {{ $canCheckIn ? '' : 'disabled' }}>
+                    @foreach (['H' => 'Hadir', 'S' => 'Sakit', 'I' => 'Izin', 'A' => 'Alfa'] as $k => $v)
+                        <option value="{{ $k }}" @selected(old('check_in_status', 'H') === $k)>{{ $v }}</option>
+                    @endforeach
+                </select>
+                @error('check_in_status')<div class="error">{{ $message }}</div>@enderror
 
-            <button type="submit">Kirim Pengajuan</button>
-        </form>
+                <label>Alasan (opsional)</label>
+                <textarea name="reason" {{ $canCheckIn ? '' : 'disabled' }}>{{ old('reason') }}</textarea>
+
+                <button type="submit" {{ $canCheckIn ? '' : 'disabled' }}>Kirim Pengajuan</button>
+            </form>
+        </div>
+
+        <div id="panel-out" style="display:none;">
+            <form method="post" action="{{ route('guru.absen.store') }}">
+                @csrf
+                <input type="hidden" name="type" value="out">
+                <label>Tanggal</label>
+                <input type="date" name="date" value="{{ old('date', now()->toDateString()) }}" min="{{ now()->toDateString() }}" max="{{ now()->toDateString() }}" required>
+                @error('date')<div class="error">{{ $message }}</div>@enderror
+
+                <label>Status Pulang</label>
+                <select name="check_out_status" required {{ $canCheckOut ? '' : 'disabled' }}>
+                    @foreach (['H' => 'Hadir', 'S' => 'Sakit', 'I' => 'Izin', 'A' => 'Alfa'] as $k => $v)
+                        <option value="{{ $k }}" @selected(old('check_out_status', 'H') === $k)>{{ $v }}</option>
+                    @endforeach
+                </select>
+                @error('check_out_status')<div class="error">{{ $message }}</div>@enderror
+
+                <label>Alasan (opsional)</label>
+                <textarea name="reason" {{ $canCheckOut ? '' : 'disabled' }}>{{ old('reason') }}</textarea>
+
+                <button type="submit" {{ $canCheckOut ? '' : 'disabled' }}>Kirim Pengajuan</button>
+            </form>
+        </div>
+
+        <p style="font-size:12px; color:#6b7280; margin-top:10px;">
+            Absen pulang hanya bisa setelah absen masuk hari ini.
+        </p>
     </div>
 
     <div class="grid">
@@ -129,5 +162,26 @@
         </div>
     </div>
 </div>
+<script>
+    const tabIn = document.getElementById('tab-in');
+    const tabOut = document.getElementById('tab-out');
+    const panelIn = document.getElementById('panel-in');
+    const panelOut = document.getElementById('panel-out');
+
+    tabIn?.addEventListener('click', () => {
+        tabIn.classList.add('active');
+        tabOut.classList.remove('active');
+        panelIn.style.display = 'block';
+        panelOut.style.display = 'none';
+    });
+
+    tabOut?.addEventListener('click', () => {
+        if (tabOut.disabled) return;
+        tabOut.classList.add('active');
+        tabIn.classList.remove('active');
+        panelOut.style.display = 'block';
+        panelIn.style.display = 'none';
+    });
+</script>
 </body>
 </html>

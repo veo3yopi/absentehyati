@@ -18,7 +18,9 @@ class AttendanceRequest extends Model
         'teacher_id',
         'date',
         'check_in_status',
+        'check_in_submitted',
         'check_out_status',
+        'check_out_submitted',
         'reason',
         'status',
         'requested_by',
@@ -29,6 +31,8 @@ class AttendanceRequest extends Model
     protected $casts = [
         'date' => 'date',
         'approved_at' => 'datetime',
+        'check_in_submitted' => 'boolean',
+        'check_out_submitted' => 'boolean',
     ];
 
     public function teacher(): BelongsTo
