@@ -25,8 +25,6 @@
         .error { color: #b91c1c; font-size: 13px; margin-top: 6px; }
         .status { color: #065f46; background: #d1fae5; padding: 8px 12px; border-radius: 6px; margin-bottom: 12px; }
         .grid { display:grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-        .tabs button { background: #e5e7eb; color: #111827; margin-top: 0; }
-        .tabs button.active { background: #111827; color: #fff; }
         @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
     </style>
 </head>
@@ -45,64 +43,35 @@
     </div>
 
     <div class="card">
-        <h2>Absensi Hari Ini</h2>
+        <h2>Absensi Hari Ini (Sekali Saja)</h2>
         @if (session('status'))
             <div class="status">{{ session('status') }}</div>
         @endif
 
-        <div class="tabs" style="display:flex; gap:8px; margin-bottom:12px;">
-            <button type="button" id="tab-in" class="active">Absen Masuk</button>
-            <button type="button" id="tab-out" {{ $canCheckOut ? '' : 'disabled' }}>Absen Pulang</button>
-        </div>
+        <form method="post" action="{{ route('guru.absen.store') }}">
+            @csrf
+            <label>Tanggal</label>
+            <input type="text" value="{{ now()->toDateString() }}" readonly>
+            <input type="hidden" name="date" value="{{ now()->toDateString() }}">
+            @error('date')<div class="error">{{ $message }}</div>@enderror
 
-        <div id="panel-in">
-            <form method="post" action="{{ route('guru.absen.store') }}">
-                @csrf
-                <input type="hidden" name="type" value="in">
-                <label>Tanggal</label>
-                <input type="date" name="date" value="{{ old('date', now()->toDateString()) }}" min="{{ now()->toDateString() }}" max="{{ now()->toDateString() }}" required>
-                @error('date')<div class="error">{{ $message }}</div>@enderror
+            <label>Status Kehadiran</label>
+            <select name="check_in_status" required {{ $canCheckIn ? '' : 'disabled' }}>
+                @foreach (['H' => 'Hadir', 'S' => 'Sakit', 'I' => 'Izin', 'A' => 'Alfa'] as $k => $v)
+                    <option value="{{ $k }}" @selected(old('check_in_status', 'H') === $k)>{{ $v }}</option>
+                @endforeach
+            </select>
+            @error('check_in_status')<div class="error">{{ $message }}</div>@enderror
 
-                <label>Status Masuk</label>
-                <select name="check_in_status" required {{ $canCheckIn ? '' : 'disabled' }}>
-                    @foreach (['H' => 'Hadir', 'S' => 'Sakit', 'I' => 'Izin', 'A' => 'Alfa'] as $k => $v)
-                        <option value="{{ $k }}" @selected(old('check_in_status', 'H') === $k)>{{ $v }}</option>
-                    @endforeach
-                </select>
-                @error('check_in_status')<div class="error">{{ $message }}</div>@enderror
+            <label>Alasan (wajib untuk S/I/A)</label>
+            <textarea name="reason" {{ $canCheckIn ? '' : 'disabled' }}>{{ old('reason') }}</textarea>
+            @error('reason')<div class="error">{{ $message }}</div>@enderror
 
-                <label>Alasan (opsional)</label>
-                <textarea name="reason" {{ $canCheckIn ? '' : 'disabled' }}>{{ old('reason') }}</textarea>
-
-                <button type="submit" {{ $canCheckIn ? '' : 'disabled' }}>Kirim Pengajuan</button>
-            </form>
-        </div>
-
-        <div id="panel-out" style="display:none;">
-            <form method="post" action="{{ route('guru.absen.store') }}">
-                @csrf
-                <input type="hidden" name="type" value="out">
-                <label>Tanggal</label>
-                <input type="date" name="date" value="{{ old('date', now()->toDateString()) }}" min="{{ now()->toDateString() }}" max="{{ now()->toDateString() }}" required>
-                @error('date')<div class="error">{{ $message }}</div>@enderror
-
-                <label>Status Pulang</label>
-                <select name="check_out_status" required {{ $canCheckOut ? '' : 'disabled' }}>
-                    @foreach (['H' => 'Hadir', 'S' => 'Sakit', 'I' => 'Izin', 'A' => 'Alfa'] as $k => $v)
-                        <option value="{{ $k }}" @selected(old('check_out_status', 'H') === $k)>{{ $v }}</option>
-                    @endforeach
-                </select>
-                @error('check_out_status')<div class="error">{{ $message }}</div>@enderror
-
-                <label>Alasan (opsional)</label>
-                <textarea name="reason" {{ $canCheckOut ? '' : 'disabled' }}>{{ old('reason') }}</textarea>
-
-                <button type="submit" {{ $canCheckOut ? '' : 'disabled' }}>Kirim Pengajuan</button>
-            </form>
-        </div>
+            <button type="submit" {{ $canCheckIn ? '' : 'disabled' }}>Absen Sekarang</button>
+        </form>
 
         <p style="font-size:12px; color:#6b7280; margin-top:10px;">
-            Absen pulang hanya bisa setelah absen masuk hari ini.
+            Absensi hanya sekali per hari. Absen pulang tidak diperlukan.
         </p>
     </div>
 
@@ -113,17 +82,23 @@
                 <thead>
                     <tr>
                         <th>Tanggal</th>
-                        <th>Masuk</th>
-                        <th>Pulang</th>
                         <th>Status</th>
+                        <th>Status Pengajuan</th>
                     </tr>
                 </thead>
                 <tbody>
                     @forelse ($requests as $req)
                         <tr>
                             <td>{{ $req->date->format('Y-m-d') }}</td>
-                            <td>{{ $req->check_in_status }}</td>
-                            <td>{{ $req->check_out_status }}</td>
+                            <td>
+                                @switch($req->check_in_status)
+                                    @case('H') Hadir @break
+                                    @case('S') Sakit @break
+                                    @case('I') Izin @break
+                                    @case('A') Alfa @break
+                                    @default {{ $req->check_in_status }}
+                                @endswitch
+                            </td>
                             <td>
                                 <span class="badge {{ $req->status }}">
                                     {{ ucfirst($req->status) }}
@@ -131,7 +106,7 @@
                             </td>
                         </tr>
                     @empty
-                        <tr><td colspan="4">Belum ada pengajuan.</td></tr>
+                        <tr><td colspan="3">Belum ada pengajuan.</td></tr>
                     @endforelse
                 </tbody>
             </table>
@@ -143,45 +118,30 @@
                 <thead>
                     <tr>
                         <th>Tanggal</th>
-                        <th>Masuk</th>
-                        <th>Pulang</th>
+                        <th>Status</th>
                     </tr>
                 </thead>
                 <tbody>
                     @forelse ($attendances as $att)
                         <tr>
                             <td>{{ $att->date->format('Y-m-d') }}</td>
-                            <td>{{ $att->check_in_status }}</td>
-                            <td>{{ $att->check_out_status }}</td>
+                            <td>
+                                @switch($att->check_in_status)
+                                    @case('H') Hadir @break
+                                    @case('S') Sakit @break
+                                    @case('I') Izin @break
+                                    @case('A') Alfa @break
+                                    @default {{ $att->check_in_status }}
+                                @endswitch
+                            </td>
                         </tr>
                     @empty
-                        <tr><td colspan="3">Belum ada data absensi.</td></tr>
+                        <tr><td colspan="2">Belum ada data absensi.</td></tr>
                     @endforelse
                 </tbody>
             </table>
         </div>
     </div>
 </div>
-<script>
-    const tabIn = document.getElementById('tab-in');
-    const tabOut = document.getElementById('tab-out');
-    const panelIn = document.getElementById('panel-in');
-    const panelOut = document.getElementById('panel-out');
-
-    tabIn?.addEventListener('click', () => {
-        tabIn.classList.add('active');
-        tabOut.classList.remove('active');
-        panelIn.style.display = 'block';
-        panelOut.style.display = 'none';
-    });
-
-    tabOut?.addEventListener('click', () => {
-        if (tabOut.disabled) return;
-        tabOut.classList.add('active');
-        tabIn.classList.remove('active');
-        panelOut.style.display = 'block';
-        panelIn.style.display = 'none';
-    });
-</script>
 </body>
 </html>

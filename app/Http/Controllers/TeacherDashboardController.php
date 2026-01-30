@@ -26,9 +26,7 @@ class TeacherDashboardController extends Controller
             ->first();
 
         $hasCheckIn = (bool) ($todayRequest?->check_in_submitted || $todayAttendance?->check_in_status);
-        $hasCheckOut = (bool) ($todayRequest?->check_out_submitted || $todayAttendance?->check_out_status);
         $canCheckIn = ! $hasCheckIn;
-        $canCheckOut = $hasCheckIn && ! $hasCheckOut;
 
         $requests = AttendanceRequest::query()
             ->where('teacher_id', $teacher->id)
@@ -50,8 +48,7 @@ class TeacherDashboardController extends Controller
             'attendances',
             'todayRequest',
             'todayAttendance',
-            'canCheckIn',
-            'canCheckOut'
+            'canCheckIn'
         ));
     }
 
@@ -60,18 +57,13 @@ class TeacherDashboardController extends Controller
         $teacher = $request->user()->teacher;
 
         $data = $request->validate([
-            'type' => ['required', Rule::in(['in', 'out'])],
             'date' => ['required', 'date', 'date_equals:today'],
-            'check_in_status' => ['nullable', Rule::in(['H', 'S', 'I', 'A'])],
-            'check_out_status' => ['nullable', Rule::in(['H', 'S', 'I', 'A'])],
+            'check_in_status' => ['required', Rule::in(['H', 'S', 'I', 'A'])],
             'reason' => ['nullable', 'string', 'max:1000'],
         ]);
 
-        if ($data['type'] === 'in' && empty($data['check_in_status'])) {
-            return back()->withErrors(['check_in_status' => 'Status masuk wajib diisi.']);
-        }
-        if ($data['type'] === 'out' && empty($data['check_out_status'])) {
-            return back()->withErrors(['check_out_status' => 'Status pulang wajib diisi.']);
+        if (in_array($data['check_in_status'], ['S', 'I', 'A'], true) && empty($data['reason'])) {
+            return back()->withErrors(['reason' => 'Alasan wajib diisi untuk status Sakit/Izin/Alfa.']);
         }
 
         $existing = AttendanceRequest::query()
@@ -86,36 +78,23 @@ class TeacherDashboardController extends Controller
             ->first();
 
         $hasCheckIn = (bool) ($existing?->check_in_submitted || $todayAttendance?->check_in_status);
-        $hasCheckOut = (bool) ($existing?->check_out_submitted || $todayAttendance?->check_out_status);
 
-        if ($data['type'] === 'out' && ! $hasCheckIn) {
-            return back()->withErrors(['check_out_status' => 'Absen pulang hanya bisa setelah absen masuk.']);
-        }
-        if ($data['type'] === 'in' && $hasCheckIn) {
-            return back()->withErrors(['check_in_status' => 'Absen masuk hari ini sudah tercatat.']);
-        }
-        if ($data['type'] === 'out' && $hasCheckOut) {
-            return back()->withErrors(['check_out_status' => 'Absen pulang hari ini sudah tercatat.']);
+        if ($hasCheckIn) {
+            return back()->withErrors(['check_in_status' => 'Absen hari ini sudah tercatat.']);
         }
 
         $payload = [
             'teacher_id' => $teacher->id,
             'date' => $data['date'],
-            'check_in_status' => $existing?->check_in_status ?? 'H',
+            'check_in_status' => $data['check_in_status'],
             'check_out_status' => $existing?->check_out_status ?? 'H',
             'reason' => $data['reason'] ?? $existing?->reason,
             'status' => AttendanceRequest::STATUS_PENDING,
             'requested_by' => $request->user()->id,
         ];
 
-        if ($data['type'] === 'in') {
-            $payload['check_in_status'] = $data['check_in_status'];
-            $payload['check_in_submitted'] = true;
-        }
-        if ($data['type'] === 'out') {
-            $payload['check_out_status'] = $data['check_out_status'];
-            $payload['check_out_submitted'] = true;
-        }
+        $payload['check_in_submitted'] = true;
+        $payload['check_out_submitted'] = false;
 
         if ($existing) {
             $existing->update($payload);
@@ -123,6 +102,6 @@ class TeacherDashboardController extends Controller
             AttendanceRequest::create($payload);
         }
 
-        return redirect()->route('guru.dashboard')->with('status', 'Pengajuan absensi berhasil dikirim.');
+        return redirect()->route('guru.dashboard')->with('status', 'Absensi hari ini berhasil dikirim.');
     }
 }
