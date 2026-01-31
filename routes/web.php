@@ -5,11 +5,7 @@ use App\Http\Controllers\TeacherDashboardController;
 use App\Http\Middleware\EnsureTeacher;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-    // login guru
-
-    return view('welcome');
-});
+Route::redirect('/', '/guru');
 
 Route::prefix('guru')->group(function () {
     Route::get('/login', [TeacherAuthController::class, 'showLogin'])->name('guru.login');
