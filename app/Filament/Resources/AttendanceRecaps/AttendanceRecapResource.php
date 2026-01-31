@@ -4,11 +4,16 @@ namespace App\Filament\Resources\AttendanceRecaps;
 
 use App\Filament\Resources\AttendanceRecaps\Pages\ListAttendanceRecaps;
 use App\Models\AttendanceRecap;
+use App\Models\SchoolSetting;
 use BackedEnum;
+use Dompdf\Dompdf;
+use Dompdf\Options;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use Filament\Actions\Action;
+use Illuminate\Support\Str;
 
 class AttendanceRecapResource extends Resource
 {
@@ -41,7 +46,36 @@ class AttendanceRecapResource extends Resource
                 \Filament\Tables\Columns\TextColumn::make('generated_at')->dateTime(),
             ])
             ->filters([])
-            ->recordActions([])
+            ->recordActions([
+                Action::make('exportPdf')
+                    ->label('Export PDF')
+                    ->icon(Heroicon::OutlinedArrowDownTray)
+                    ->action(function (AttendanceRecap $record) {
+                        $record->load(['rows.teacher', 'generator']);
+                        $setting = SchoolSetting::query()->first();
+
+                        $fileBase = 'rekap-absensi-' . ($record->academic_year ?? 'periode') . '-' . ($record->semester ?? '');
+                        $filename = Str::slug($fileBase, '-') . '.pdf';
+
+                        $html = view('admin.attendance_recaps.pdf', [
+                            'recap' => $record,
+                            'rows' => $record->rows,
+                            'school' => $setting,
+                        ])->render();
+
+                        $options = new Options();
+                        $options->set('isRemoteEnabled', true);
+                        $dompdf = new Dompdf($options);
+                        $dompdf->loadHtml($html);
+                        $dompdf->setPaper('A4', 'landscape');
+                        $dompdf->render();
+
+                        return response()->streamDownload(
+                            fn () => print($dompdf->output()),
+                            $filename
+                        );
+                    }),
+            ])
             ->toolbarActions([]);
     }
 

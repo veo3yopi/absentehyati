@@ -143,50 +143,77 @@ class ListAttendanceRecaps extends ListRecords
                             ]);
                         }
 
-                        $totals = Attendance::query()
-                            ->select([
-                                'teacher_id',
-                                DB::raw("SUM(CASE WHEN check_in_status = 'H' THEN 1 ELSE 0 END) as in_h"),
-                                DB::raw("SUM(CASE WHEN check_in_status = 'S' THEN 1 ELSE 0 END) as in_s"),
-                                DB::raw("SUM(CASE WHEN check_in_status = 'I' THEN 1 ELSE 0 END) as in_i"),
-                                DB::raw("SUM(CASE WHEN check_in_status = 'A' THEN 1 ELSE 0 END) as in_a"),
-                                DB::raw("SUM(CASE WHEN check_in_status = 'D' THEN 1 ELSE 0 END) as in_d"),
-                                DB::raw("SUM(CASE WHEN check_in_status = 'W' THEN 1 ELSE 0 END) as in_w"),
-                                DB::raw("SUM(CASE WHEN check_in_status = 'C' THEN 1 ELSE 0 END) as in_c"),
-                                DB::raw("SUM(CASE WHEN check_out_status = 'H' THEN 1 ELSE 0 END) as out_h"),
-                                DB::raw("SUM(CASE WHEN check_out_status = 'S' THEN 1 ELSE 0 END) as out_s"),
-                                DB::raw("SUM(CASE WHEN check_out_status = 'I' THEN 1 ELSE 0 END) as out_i"),
-                                DB::raw("SUM(CASE WHEN check_out_status = 'A' THEN 1 ELSE 0 END) as out_a"),
-                                DB::raw("SUM(CASE WHEN check_out_status = 'D' THEN 1 ELSE 0 END) as out_d"),
-                                DB::raw("SUM(CASE WHEN check_out_status = 'W' THEN 1 ELSE 0 END) as out_w"),
-                                DB::raw("SUM(CASE WHEN check_out_status = 'C' THEN 1 ELSE 0 END) as out_c"),
-                            ])
+                        $attendanceByTeacher = Attendance::query()
                             ->whereBetween('date', [$periodStart->toDateString(), $periodEnd->toDateString()])
-                            ->groupBy('teacher_id')
                             ->get()
-                            ->keyBy('teacher_id');
+                            ->groupBy('teacher_id')
+                            ->map(function ($items) {
+                                return $items->keyBy(fn ($item) => $item->date->toDateString());
+                            });
+
+                        $dates = [];
+                        $cursor = $periodStart->copy()->startOfDay();
+                        $endDate = $periodEnd->copy()->startOfDay();
+                        while ($cursor->lte($endDate)) {
+                            $dates[] = $cursor->toDateString();
+                            $cursor->addDay();
+                        }
 
                         $rows = [];
                         $teachers = Teacher::query()->orderBy('name')->get();
                         foreach ($teachers as $teacher) {
-                            $row = $totals->get($teacher->id);
+                            $counts = [
+                                'H' => 0,
+                                'S' => 0,
+                                'I' => 0,
+                                'A' => 0,
+                                'D' => 0,
+                                'W' => 0,
+                                'C' => 0,
+                            ];
+
+                            $teacherAttendance = $attendanceByTeacher->get($teacher->id, collect());
+                            foreach ($dates as $date) {
+                                $attendance = $teacherAttendance->get($date);
+                                $status = 'A';
+                                if ($attendance) {
+                                    $status = null;
+                                    foreach ([
+                                        $attendance->check_in_status,
+                                        $attendance->check_out_status,
+                                    ] as $code) {
+                                        if (in_array($code, ['S', 'I', 'D', 'W', 'C', 'A'], true)) {
+                                            $status = $code;
+                                            break;
+                                        }
+                                    }
+                                    if (! $status) {
+                                        $status = ($attendance->check_in_status === 'H' || $attendance->check_out_status === 'H')
+                                            ? 'H'
+                                            : 'A';
+                                    }
+                                }
+
+                                $counts[$status] = ($counts[$status] ?? 0) + 1;
+                            }
+
                             $rows[] = [
                                 'attendance_recap_id' => $recap->id,
                                 'teacher_id' => $teacher->id,
-                                'in_h' => (int) ($row->in_h ?? 0),
-                                'in_s' => (int) ($row->in_s ?? 0),
-                                'in_i' => (int) ($row->in_i ?? 0),
-                                'in_a' => (int) ($row->in_a ?? 0),
-                                'in_d' => (int) ($row->in_d ?? 0),
-                                'in_w' => (int) ($row->in_w ?? 0),
-                                'in_c' => (int) ($row->in_c ?? 0),
-                                'out_h' => (int) ($row->out_h ?? 0),
-                                'out_s' => (int) ($row->out_s ?? 0),
-                                'out_i' => (int) ($row->out_i ?? 0),
-                                'out_a' => (int) ($row->out_a ?? 0),
-                                'out_d' => (int) ($row->out_d ?? 0),
-                                'out_w' => (int) ($row->out_w ?? 0),
-                                'out_c' => (int) ($row->out_c ?? 0),
+                                'in_h' => $counts['H'],
+                                'in_s' => $counts['S'],
+                                'in_i' => $counts['I'],
+                                'in_a' => $counts['A'],
+                                'in_d' => $counts['D'],
+                                'in_w' => $counts['W'],
+                                'in_c' => $counts['C'],
+                                'out_h' => 0,
+                                'out_s' => 0,
+                                'out_i' => 0,
+                                'out_a' => 0,
+                                'out_d' => 0,
+                                'out_w' => 0,
+                                'out_c' => 0,
                                 'created_at' => now(),
                                 'updated_at' => now(),
                             ];
