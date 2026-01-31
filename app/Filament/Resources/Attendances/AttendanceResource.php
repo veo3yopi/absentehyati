@@ -18,7 +18,11 @@ class AttendanceResource extends Resource
 {
     protected static ?string $model = Attendance::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCalendarDays;
+
+    protected static ?string $navigationLabel = 'Data Absensi';
+
+    protected static ?int $navigationSort = 20;
 
     public static function form(Schema $schema): Schema
     {
@@ -35,6 +39,11 @@ class AttendanceResource extends Resource
         return [
             //
         ];
+    }
+
+    public static function getNavigationGroup(): string|\UnitEnum|null
+    {
+        return 'Absensi';
     }
 
     public static function getPages(): array

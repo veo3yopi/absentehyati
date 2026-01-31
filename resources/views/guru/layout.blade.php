@@ -277,7 +277,7 @@
     </a>
     <a href="{{ route('guru.absen.page') }}" class="{{ request()->routeIs('guru.absen.page') ? 'active' : '' }}">
         <span class="icon-wrap">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3v3m10-3v3M4 8h16M6 11h4m-4 4h6m5-7v9a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h1m10 0h1"/></svg>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 12a4 4 0 1 0-4-4 4 4 0 0 0 4 4zm7 9v-1a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v1"/></svg>
         </span>
         <span>Absen</span>
     </a>

@@ -18,7 +18,11 @@ class AttendanceSettingResource extends Resource
 {
     protected static ?string $model = AttendanceSetting::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedClock;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCog6Tooth;
+
+    protected static ?string $navigationLabel = 'Aturan Absensi';
+
+    protected static ?int $navigationSort = 10;
 
     protected static ?string $recordTitleAttribute = 'start_time';
 
@@ -39,6 +43,11 @@ class AttendanceSettingResource extends Resource
             'create' => CreateAttendanceSetting::route('/create'),
             'edit' => EditAttendanceSetting::route('/{record}/edit'),
         ];
+    }
+
+    public static function getNavigationGroup(): string|\UnitEnum|null
+    {
+        return 'Pengaturan';
     }
 
     public static function canCreate(): bool

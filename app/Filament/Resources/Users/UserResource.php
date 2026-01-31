@@ -18,7 +18,11 @@ class UserResource extends Resource
 {
     protected static ?string $model = User::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedUsers;
+
+    protected static ?string $navigationLabel = 'Akun Pengguna';
+
+    protected static ?int $navigationSort = 20;
 
     protected static ?string $recordTitleAttribute = 'User';
 
@@ -37,6 +41,11 @@ class UserResource extends Resource
         return [
             //
         ];
+    }
+
+    public static function getNavigationGroup(): string|\UnitEnum|null
+    {
+        return 'Master Data';
     }
 
     public static function getPages(): array

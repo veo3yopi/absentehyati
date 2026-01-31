@@ -18,7 +18,11 @@ class TeacherResource extends Resource
 {
     protected static ?string $model = Teacher::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedAcademicCap;
+
+    protected static ?string $navigationLabel = 'Data Guru';
+
+    protected static ?int $navigationSort = 10;
 
     public static function form(Schema $schema): Schema
     {
@@ -35,6 +39,11 @@ class TeacherResource extends Resource
         return [
             //
         ];
+    }
+
+    public static function getNavigationGroup(): string|\UnitEnum|null
+    {
+        return 'Master Data';
     }
 
     public static function getPages(): array

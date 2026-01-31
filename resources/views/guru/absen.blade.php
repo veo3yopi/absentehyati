@@ -14,6 +14,22 @@
         justify-content: space-between;
     }
     .hero h3 { margin: 0; font-size: 20px; }
+    .hero-time {
+        font-size: 13px;
+        color: var(--muted);
+        margin-top: 4px;
+    }
+    .clock {
+        font-weight: 700;
+        color: var(--ink-1);
+        background: #f8fafc;
+        border: 1px solid var(--line);
+        padding: 4px 10px;
+        border-radius: 999px;
+        display: inline-block;
+        font-variant-numeric: tabular-nums;
+        margin-left: 6px;
+    }
     .pill {
         padding: 6px 12px;
         background: #e0f2fe;
@@ -81,7 +97,10 @@
     <div class="hero">
         <div>
             <h3>Halo, {{ $teacher->name }}</h3>
-            <small>{{ now()->format('l, d F Y') }}</small>
+            <div class="hero-time">
+                <span>{{ now()->format('l, d F Y') }}</span>
+                <span class="clock" id="live-clock">--:--:--</span>
+            </div>
         </div>
         <span class="pill">Absensi Hari Ini</span>
     </div>
@@ -177,6 +196,16 @@
         const checkoutStatus = document.getElementById('checkout-status');
         const canCheckIn = {{ $canCheckIn ? 'true' : 'false' }};
         const canCheckOut = {{ $canCheckOut ? 'true' : 'false' }};
+        const clock = document.getElementById('live-clock');
+
+        function updateClock() {
+            if (!clock) return;
+            const now = new Date();
+            const hh = String(now.getHours()).padStart(2, '0');
+            const mm = String(now.getMinutes()).padStart(2, '0');
+            const ss = String(now.getSeconds()).padStart(2, '0');
+            clock.textContent = `${hh}:${mm}:${ss}`;
+        }
 
         function setMode(mode) {
             const isCheckIn = mode === 'checkin';
@@ -219,6 +248,9 @@
         } else {
             setMode('checkin');
         }
+
+        updateClock();
+        setInterval(updateClock, 1000);
     })();
 </script>
 @endsection

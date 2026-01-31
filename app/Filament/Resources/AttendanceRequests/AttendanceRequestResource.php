@@ -18,7 +18,11 @@ class AttendanceRequestResource extends Resource
 {
     protected static ?string $model = AttendanceRequest::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedDocumentText;
+
+    protected static ?string $navigationLabel = 'Pengajuan Absensi';
+
+    protected static ?int $navigationSort = 30;
 
     protected static ?string $recordTitleAttribute = 'start_date';
 
@@ -37,6 +41,11 @@ class AttendanceRequestResource extends Resource
         return [
             //
         ];
+    }
+
+    public static function getNavigationGroup(): string|\UnitEnum|null
+    {
+        return 'Absensi';
     }
 
     public static function getPages(): array

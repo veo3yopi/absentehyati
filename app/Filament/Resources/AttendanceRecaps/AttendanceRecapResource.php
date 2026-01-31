@@ -14,7 +14,11 @@ class AttendanceRecapResource extends Resource
 {
     protected static ?string $model = AttendanceRecap::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedClipboardDocumentList;
+
+    protected static ?string $navigationLabel = 'Rekap Absensi';
+
+    protected static ?int $navigationSort = 40;
 
     protected static ?string $recordTitleAttribute = 'academic_year';
 
@@ -46,6 +50,11 @@ class AttendanceRecapResource extends Resource
         return [
             //
         ];
+    }
+
+    public static function getNavigationGroup(): string|\UnitEnum|null
+    {
+        return 'Absensi';
     }
 
     public static function getPages(): array

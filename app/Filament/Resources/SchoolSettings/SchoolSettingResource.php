@@ -18,7 +18,11 @@ class SchoolSettingResource extends Resource
 {
     protected static ?string $model = SchoolSetting::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBuildingOffice2;
+
+    protected static ?string $navigationLabel = 'Profil Sekolah';
+
+    protected static ?int $navigationSort = 20;
 
     protected static ?string $recordTitleAttribute = 'school_name';
 
@@ -46,6 +50,11 @@ class SchoolSettingResource extends Resource
             'create' => CreateSchoolSetting::route('/create'),
             'edit' => EditSchoolSetting::route('/{record}/edit'),
         ];
+    }
+
+    public static function getNavigationGroup(): string|\UnitEnum|null
+    {
+        return 'Pengaturan';
     }
 
     public static function canCreate(): bool
