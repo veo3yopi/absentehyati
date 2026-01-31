@@ -14,19 +14,13 @@ class TeacherDashboardController extends Controller
         $teacher = $request->user()->teacher;
 
         $today = now()->toDateString();
-        $todayRequest = AttendanceRequest::query()
-            ->where('teacher_id', $teacher->id)
-            ->whereDate('date', $today)
-            ->where('status', AttendanceRequest::STATUS_PENDING)
-            ->first();
-
         $todayAttendance = Attendance::query()
             ->where('teacher_id', $teacher->id)
             ->whereDate('date', $today)
             ->first();
 
-        $hasCheckIn = (bool) ($todayRequest?->check_in_submitted || $todayAttendance?->check_in_status);
-        $canCheckIn = ! $hasCheckIn;
+        $canCheckIn = ! $todayAttendance?->check_in_time;
+        $canCheckOut = (bool) ($todayAttendance?->check_in_time && ! $todayAttendance?->check_out_time);
 
         $requests = AttendanceRequest::query()
             ->where('teacher_id', $teacher->id)
@@ -46,13 +40,13 @@ class TeacherDashboardController extends Controller
             'teacher',
             'requests',
             'attendances',
-            'todayRequest',
             'todayAttendance',
-            'canCheckIn'
+            'canCheckIn',
+            'canCheckOut'
         ));
     }
 
-    public function store(Request $request)
+    public function storeCheckIn(Request $request)
     {
         $teacher = $request->user()->teacher;
 
@@ -66,20 +60,12 @@ class TeacherDashboardController extends Controller
             return back()->withErrors(['reason' => 'Alasan wajib diisi untuk status Sakit/Izin/Alfa.']);
         }
 
-        $existing = AttendanceRequest::query()
-            ->where('teacher_id', $teacher->id)
-            ->whereDate('date', $data['date'])
-            ->where('status', AttendanceRequest::STATUS_PENDING)
-            ->first();
-
-        $todayAttendance = Attendance::query()
+        $attendance = Attendance::query()
             ->where('teacher_id', $teacher->id)
             ->whereDate('date', $data['date'])
             ->first();
 
-        $hasCheckIn = (bool) ($existing?->check_in_submitted || $todayAttendance?->check_in_status);
-
-        if ($hasCheckIn) {
+        if ($attendance?->check_in_time) {
             return back()->withErrors(['check_in_status' => 'Absen hari ini sudah tercatat.']);
         }
 
@@ -87,21 +73,46 @@ class TeacherDashboardController extends Controller
             'teacher_id' => $teacher->id,
             'date' => $data['date'],
             'check_in_status' => $data['check_in_status'],
-            'check_out_status' => $existing?->check_out_status ?? 'H',
-            'reason' => $data['reason'] ?? $existing?->reason,
-            'status' => AttendanceRequest::STATUS_PENDING,
-            'requested_by' => $request->user()->id,
+            'check_in_time' => now(),
+            'note' => $data['reason'] ?? null,
         ];
 
-        $payload['check_in_submitted'] = true;
-        $payload['check_out_submitted'] = false;
-
-        if ($existing) {
-            $existing->update($payload);
+        if ($attendance) {
+            $attendance->update($payload);
         } else {
-            AttendanceRequest::create($payload);
+            Attendance::create($payload);
         }
 
-        return redirect()->route('guru.dashboard')->with('status', 'Absensi hari ini berhasil dikirim.');
+        return redirect()->route('guru.dashboard')->with('status', 'Absen masuk berhasil dikirim.');
+    }
+
+    public function storeCheckOut(Request $request)
+    {
+        $teacher = $request->user()->teacher;
+
+        $data = $request->validate([
+            'date' => ['required', 'date', 'date_equals:today'],
+            'check_out_status' => ['required', Rule::in(['H', 'S', 'I', 'A'])],
+        ]);
+
+        $attendance = Attendance::query()
+            ->where('teacher_id', $teacher->id)
+            ->whereDate('date', $data['date'])
+            ->first();
+
+        if (! $attendance?->check_in_time) {
+            return back()->withErrors(['check_out_status' => 'Absen masuk belum dilakukan hari ini.']);
+        }
+
+        if ($attendance->check_out_time) {
+            return back()->withErrors(['check_out_status' => 'Absen pulang hari ini sudah tercatat.']);
+        }
+
+        $attendance->update([
+            'check_out_status' => $data['check_out_status'],
+            'check_out_time' => now(),
+        ]);
+
+        return redirect()->route('guru.dashboard')->with('status', 'Absen pulang berhasil dikirim.');
     }
 }

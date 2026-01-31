@@ -14,12 +14,16 @@ class Attendance extends Model
         'teacher_id',
         'date',
         'check_in_status',
+        'check_in_time',
         'check_out_status',
+        'check_out_time',
         'note',
     ];
 
     protected $casts = [
         'date' => 'date',
+        'check_in_time' => 'datetime:H:i',
+        'check_out_time' => 'datetime:H:i',
     ];
 
     public function teacher(): BelongsTo

@@ -16,6 +16,7 @@ Route::prefix('guru')->group(function () {
 
     Route::middleware([EnsureTeacher::class])->group(function () {
         Route::get('/', [TeacherDashboardController::class, 'index'])->name('guru.dashboard');
-        Route::post('/absen', [TeacherDashboardController::class, 'store'])->name('guru.absen.store');
+        Route::post('/absen-masuk', [TeacherDashboardController::class, 'storeCheckIn'])->name('guru.absen.checkin');
+        Route::post('/absen-pulang', [TeacherDashboardController::class, 'storeCheckOut'])->name('guru.absen.checkout');
     });
 });
