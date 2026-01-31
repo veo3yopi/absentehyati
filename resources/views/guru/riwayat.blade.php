@@ -1,285 +1,42 @@
-<!doctype html>
-<html lang="id">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Riwayat Guru</title>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&display=swap');
+@extends('guru.layout')
 
-        :root {
-            --bg-0: #f2f5fb;
-            --bg-1: #ffffff;
-            --ink-1: #0f172a;
-            --ink-2: #334155;
-            --muted: #64748b;
-            --line: #e2e8f0;
-            --brand-1: #1d4ed8;
-            --brand-2: #0ea5e9;
-            --shadow-2: 0 6px 16px rgba(15, 23, 42, 0.08);
-            --radius-1: 14px;
-        }
+@section('title', 'Riwayat Guru')
 
-        * { box-sizing: border-box; }
-        body {
-            font-family: 'Manrope', sans-serif;
-            background:
-                radial-gradient(1200px 400px at 15% -10%, rgba(14, 165, 233, 0.18), transparent 60%),
-                radial-gradient(900px 360px at 90% 0%, rgba(29, 78, 216, 0.20), transparent 60%),
-                var(--bg-0);
-            color: var(--ink-1);
-            margin: 0;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
+@section('container-width', '1100px')
 
-        header {
-            background: #ffffff;
-            color: var(--ink-1);
-            padding: 14px 24px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            border-bottom: 1px solid #eef2f7;
-            box-shadow: 0 2px 10px rgba(15, 23, 42, 0.04);
-            position: sticky;
-            top: 0;
-            z-index: 10;
-        }
-
-        header h1 {
-            font-size: 20px;
-            margin: 0;
-            letter-spacing: -0.2px;
-        }
-
-        .brand {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-weight: 800;
-            letter-spacing: -0.2px;
-        }
-        .brand-mark {
-            width: 26px;
-            height: 26px;
-            border-radius: 8px 4px 12px 4px;
-            background: linear-gradient(135deg, #ef4444, #fb7185);
-            transform: rotate(8deg);
-            display: inline-block;
-        }
-        .brand-text {
-            font-size: 18px;
-            color: var(--ink-1);
-        }
-        .nav {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-        .nav a,
-        .mobile-nav a {
-            text-decoration: none;
-            color: #0f172a;
-            font-weight: 600;
-            padding: 6px 8px;
-            border-radius: 8px;
-            border: 1px solid transparent;
-            transition: background 120ms ease, color 120ms ease;
-        }
-        .nav a.active,
-        .mobile-nav a.active {
-            background: #eef2ff;
-            color: #1d4ed8;
-            border-color: #e0e7ff;
-        }
-        .nav-toggle {
-            display: none;
-            align-items: center;
-            justify-content: center;
-            width: 42px;
-            height: 42px;
-            border-radius: 10px;
-            border: 1px solid #e2e8f0;
-            background: #fff;
-            color: #0f172a;
-            cursor: pointer;
-        }
-        .nav-toggle span {
-            display: block;
-            width: 18px;
-            height: 2px;
-            background: #0f172a;
-            margin: 3px 0;
-        }
-        .mobile-nav {
-            display: none;
-            flex-direction: column;
-            gap: 8px;
-            margin-top: 10px;
-            padding: 10px 0;
-        }
-        .mobile-nav.open { display: flex; }
-        .menu {
-            display: flex;
-            align-items: center;
-            gap: 18px;
-        }
-        .menu a {
-            color: #0f172a;
-            font-weight: 600;
-        }
-        .menu a.active {
-            color: #2563eb;
-        }
-        .actions {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-        .lang {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            font-size: 14px;
-            color: #334155;
-        }
-
-        .container {
-            max-width: 1100px;
-            margin: 24px auto 48px;
-            padding: 0 16px;
-            width: 100%;
-            flex: 1 0 auto;
-        }
-
-        .card {
-            background: var(--bg-1);
-            padding: 18px;
-            border-radius: var(--radius-1);
-            box-shadow: var(--shadow-2);
-            margin-bottom: 18px;
-            border: 1px solid #eef2f7;
-        }
-
-        h2 { font-size: 18px; margin: 0 0 12px; }
-
-        .btn {
-            margin-top: 12px;
-            padding: 10px 16px;
-            border: 0;
-            border-radius: 10px;
-            background: linear-gradient(135deg, var(--brand-1), var(--brand-2));
-            color: #fff;
-            font-weight: 700;
-            cursor: pointer;
-            box-shadow: 0 10px 18px rgba(29, 78, 216, 0.25);
-        }
-        .btn.secondary { background: #0f172a; box-shadow: none; }
-
-        table { width: 100%; border-collapse: collapse; font-size: 14px; }
-        th, td { border-bottom: 1px solid #eef2f7; padding: 10px 8px; text-align: left; }
-        th { color: var(--muted); font-weight: 700; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
-        .badge { padding: 4px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; display: inline-block; }
-        .pending { background: #fef3c7; color: #92400e; }
-        .approved { background: #dcfce7; color: #166534; }
-        .rejected { background: #fee2e2; color: #991b1b; }
-        .footer {
-            margin-top: 32px;
-            padding: 18px 16px;
-            border-top: 1px solid #eef2f7;
-            color: var(--muted);
-            font-size: 13px;
-            text-align: center;
-            background: #ffffff;
-            margin-top: auto;
-        }
-
-        @media (max-width: 900px) {
-            .menu { display: none; }
-            .nav-toggle { display: inline-flex; }
-        }
-        @media (max-width: 720px) {
-            header { padding: 14px 16px; }
-            .container { padding: 0 12px; }
-            .btn { width: 100%; }
-            table, thead, tbody, th, td, tr { display: block; }
-            thead { display: none; }
-            tbody tr {
-                border: 1px solid #eef2f7;
-                border-radius: 12px;
-                margin-bottom: 12px;
-                padding: 8px 10px;
-                background: #fff;
-            }
-            td {
-                border: 0;
-                padding: 6px 0;
-                display: flex;
-                justify-content: space-between;
-                gap: 12px;
-            }
-            td::before {
-                content: attr(data-label);
-                font-weight: 700;
-                color: var(--muted);
-                font-size: 12px;
-                text-transform: uppercase;
-                letter-spacing: 0.4px;
-            }
-        }
-    </style>
-</head>
-<body>
-<header>
-    <div class="brand">
-        <span class="brand-mark" aria-hidden="true"></span>
-        <span class="brand-text">Absensi Guru</span>
-    </div>
-    <nav class="menu" aria-label="Menu utama">
-        <a href="{{ route('guru.dashboard') }}">Dashboard</a>
-        <a href="{{ route('guru.absen.page') }}">Absen</a>
-        <a href="{{ route('guru.absen.request.page') }}">Pengajuan</a>
-        <a href="{{ route('guru.absen.history') }}" class="active">Riwayat</a>
-    </nav>
-    <div class="actions">
-        <span class="lang">ID</span>
-        <form method="post" action="{{ route('guru.logout') }}">
-            @csrf
-            <button type="submit" class="btn secondary" style="background:#ef4444;">Keluar</button>
-        </form>
-        <button class="nav-toggle" type="button" aria-label="Menu" aria-expanded="false" aria-controls="mobile-nav">
-            <span></span>
-            <span></span>
-            <span></span>
-        </button>
-    </div>
-</header>
-<nav id="mobile-nav" class="mobile-nav" aria-label="Menu mobile">
-    <a href="{{ route('guru.dashboard') }}">Dashboard</a>
-    <a href="{{ route('guru.absen.page') }}">Absen</a>
-    <a href="{{ route('guru.absen.request.page') }}">Pengajuan</a>
-    <a href="{{ route('guru.absen.history') }}" class="active">Riwayat</a>
-</nav>
-
-<div class="container">
-    <div class="card">
-        <h2>Riwayat Absensi</h2>
-        <table>
-            <thead>
+@section('content')
+<div class="card">
+    <h2>Riwayat Absensi</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Tanggal</th>
+                <th>Masuk</th>
+                <th>Pulang</th>
+            </tr>
+        </thead>
+        <tbody>
+            @forelse ($attendances as $att)
                 <tr>
-                    <th>Tanggal</th>
-                    <th>Masuk</th>
-                    <th>Pulang</th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse ($attendances as $att)
-                    <tr>
-                        <td data-label="Tanggal">{{ $att->date->format('Y-m-d') }}</td>
-                        <td data-label="Masuk">
-                            @switch($att->check_in_status)
+                    <td data-label="Tanggal">{{ $att->date->format('Y-m-d') }}</td>
+                    <td data-label="Masuk">
+                        @switch($att->check_in_status)
+                            @case('H') Hadir @break
+                            @case('S') Sakit @break
+                            @case('I') Izin @break
+                            @case('A') Alfa @break
+                            @case('D') Dinas Luar @break
+                            @case('W') WFH @break
+                            @case('C') Cuti @break
+                            @default {{ $att->check_in_status }}
+                        @endswitch
+                        @if ($att->check_in_time)
+                            ({{ $att->check_in_time->format('H:i') }})
+                        @endif
+                    </td>
+                    <td data-label="Pulang">
+                        @if ($att->check_out_time)
+                            @switch($att->check_out_status)
                                 @case('H') Hadir @break
                                 @case('S') Sakit @break
                                 @case('I') Izin @break
@@ -287,92 +44,58 @@
                                 @case('D') Dinas Luar @break
                                 @case('W') WFH @break
                                 @case('C') Cuti @break
-                                @default {{ $att->check_in_status }}
+                                @default {{ $att->check_out_status }}
                             @endswitch
-                            @if ($att->check_in_time)
-                                ({{ $att->check_in_time->format('H:i') }})
-                            @endif
-                        </td>
-                        <td data-label="Pulang">
-                            @if ($att->check_out_time)
-                                @switch($att->check_out_status)
-                                    @case('H') Hadir @break
-                                    @case('S') Sakit @break
-                                    @case('I') Izin @break
-                                    @case('A') Alfa @break
-                                    @case('D') Dinas Luar @break
-                                    @case('W') WFH @break
-                                    @case('C') Cuti @break
-                                    @default {{ $att->check_out_status }}
-                                @endswitch
-                                ({{ $att->check_out_time->format('H:i') }})
-                            @else
-                                -
-                            @endif
-                        </td>
-                    </tr>
-                @empty
-                    <tr><td colspan="3">Belum ada data absensi.</td></tr>
-                @endforelse
-            </tbody>
-        </table>
-    </div>
-
-    <div class="card">
-        <h2>Riwayat Pengajuan</h2>
-        <table>
-            <thead>
-                <tr>
-                    <th>Periode</th>
-                    <th>Jenis</th>
-                    <th>Status</th>
+                            ({{ $att->check_out_time->format('H:i') }})
+                        @else
+                            -
+                        @endif
+                    </td>
                 </tr>
-            </thead>
-            <tbody>
-                @forelse ($requests as $req)
-                    <tr>
-                        <td data-label="Periode">
-                            {{ $req->start_date?->format('Y-m-d') ?? $req->date->format('Y-m-d') }}
-                            @if (($req->end_date ?? $req->date)->format('Y-m-d') !== ($req->start_date ?? $req->date)->format('Y-m-d'))
-                                - {{ $req->end_date?->format('Y-m-d') }}
-                            @endif
-                        </td>
-                        <td data-label="Jenis">
-                            @switch($req->type)
-                                @case('S') Sakit @break
-                                @case('I') Izin @break
-                                @case('D') Dinas Luar @break
-                                @case('W') WFH @break
-                                @case('C') Cuti @break
-                                @default {{ $req->type }}
-                            @endswitch
-                        </td>
-                        <td data-label="Status">
-                            <span class="badge {{ $req->status }}">{{ ucfirst($req->status) }}</span>
-                        </td>
-                    </tr>
-                @empty
-                    <tr><td colspan="3">Belum ada pengajuan.</td></tr>
-                @endforelse
-            </tbody>
-        </table>
-    </div>
+            @empty
+                <tr><td colspan="3">Belum ada data absensi.</td></tr>
+            @endforelse
+        </tbody>
+    </table>
 </div>
-<footer class="footer">
-    <div>{{ $schoolSetting?->school_name ?? 'Sekolah' }}</div>
-    <div>{{ $schoolSetting?->address ?? '' }}</div>
-    <div>Tahun Ajaran {{ $schoolSetting?->academic_year ?? '-' }} • Semester {{ $schoolSetting?->semester ?? '-' }}</div>
-</footer>
-<script>
-    (function () {
-        const toggle = document.querySelector('.nav-toggle');
-        const mobileNav = document.getElementById('mobile-nav');
-        if (!toggle || !mobileNav) return;
-        toggle.addEventListener('click', () => {
-            const isOpen = mobileNav.classList.toggle('open');
-            toggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
-        });
-    })();
-</script>
-</body>
-</html>
+
+<div class="card">
+    <h2>Riwayat Pengajuan</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Periode</th>
+                <th>Jenis</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            @forelse ($requests as $req)
+                <tr>
+                    <td data-label="Periode">
+                        {{ $req->start_date?->format('Y-m-d') ?? $req->date->format('Y-m-d') }}
+                        @if (($req->end_date ?? $req->date)->format('Y-m-d') !== ($req->start_date ?? $req->date)->format('Y-m-d'))
+                            - {{ $req->end_date?->format('Y-m-d') }}
+                        @endif
+                    </td>
+                    <td data-label="Jenis">
+                        @switch($req->type)
+                            @case('S') Sakit @break
+                            @case('I') Izin @break
+                            @case('D') Dinas Luar @break
+                            @case('W') WFH @break
+                            @case('C') Cuti @break
+                            @default {{ $req->type }}
+                        @endswitch
+                    </td>
+                    <td data-label="Status">
+                        <span class="badge {{ $req->status }}">{{ ucfirst($req->status) }}</span>
+                    </td>
+                </tr>
+            @empty
+                <tr><td colspan="3">Belum ada pengajuan.</td></tr>
+            @endforelse
+        </tbody>
+    </table>
+</div>
+@endsection

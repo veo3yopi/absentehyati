@@ -1,363 +1,105 @@
-<!doctype html>
-<html lang="id">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Dashboard Guru</title>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&display=swap');
+@extends('guru.layout')
 
-        :root {
-            --bg-0: #f2f5fb;
-            --bg-1: #ffffff;
-            --ink-1: #0f172a;
-            --ink-2: #334155;
-            --muted: #64748b;
-            --line: #e2e8f0;
-            --brand-1: #1d4ed8;
-            --brand-2: #0ea5e9;
-            --success: #16a34a;
-            --warning: #f59e0b;
-            --danger: #ef4444;
-            --shadow-1: 0 12px 30px rgba(15, 23, 42, 0.12);
-            --shadow-2: 0 6px 16px rgba(15, 23, 42, 0.08);
-            --radius-1: 14px;
-            --radius-2: 22px;
-        }
+@section('title', 'Dashboard Guru')
 
-        * { box-sizing: border-box; }
-        body {
-            font-family: 'Manrope', sans-serif;
-            background:
-                radial-gradient(1200px 400px at 15% -10%, rgba(14, 165, 233, 0.18), transparent 60%),
-                radial-gradient(900px 360px at 90% 0%, rgba(29, 78, 216, 0.20), transparent 60%),
-                var(--bg-0);
-            color: var(--ink-1);
-            margin: 0;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
+@section('container-width', '1100px')
 
-        header {
-            background: #ffffff;
-            color: var(--ink-1);
-            padding: 14px 24px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            border-bottom: 1px solid #eef2f7;
-            box-shadow: 0 2px 10px rgba(15, 23, 42, 0.04);
-            position: sticky;
-            top: 0;
-            z-index: 10;
-        }
+@section('page-style')
+<style>
+    .hero {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px 20px;
+        align-items: center;
+        justify-content: space-between;
+    }
+    .hero h3 { margin: 0; font-size: 20px; }
+    .pill {
+        padding: 6px 12px;
+        background: #e0f2fe;
+        color: #075985;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 700;
+    }
+    .status-row {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        font-size: 13px;
+        color: var(--ink-2);
+    }
+    .status-chip {
+        background: #f8fafc;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        padding: 6px 10px;
+        font-weight: 600;
+    }
+    .quick-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 14px;
+        margin-top: 14px;
+    }
+    .quick-card {
+        border: 1px solid #eef2f7;
+        border-radius: 14px;
+        padding: 14px;
+        background: #fff;
+        box-shadow: var(--shadow-2);
+        text-decoration: none;
+        color: inherit;
+    }
+    .quick-card h4 { margin: 0 0 6px; font-size: 16px; }
+    .quick-card p { margin: 0; font-size: 13px; color: var(--muted); }
 
-        header h1 {
-            font-size: 20px;
-            margin: 0;
-            letter-spacing: -0.2px;
-        }
+    @media (max-width: 900px) {
+        .quick-grid { grid-template-columns: 1fr; }
+    }
+</style>
+@endsection
 
-        .brand {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-weight: 800;
-            letter-spacing: -0.2px;
-        }
-        .brand-mark {
-            width: 26px;
-            height: 26px;
-            border-radius: 8px 4px 12px 4px;
-            background: linear-gradient(135deg, #ef4444, #fb7185);
-            transform: rotate(8deg);
-            display: inline-block;
-        }
-        .brand-text {
-            font-size: 18px;
-            color: var(--ink-1);
-        }
-
-        .nav {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-        .nav a,
-        .mobile-nav a {
-            text-decoration: none;
-            color: #0f172a;
-            font-weight: 600;
-            padding: 6px 8px;
-            border-radius: 8px;
-            border: 1px solid transparent;
-            transition: background 120ms ease, color 120ms ease;
-        }
-        .nav a.active,
-        .mobile-nav a.active {
-            background: #eef2ff;
-            color: #1d4ed8;
-            border-color: #e0e7ff;
-        }
-        .nav-toggle {
-            display: none;
-            align-items: center;
-            justify-content: center;
-            width: 42px;
-            height: 42px;
-            border-radius: 10px;
-            border: 1px solid #e2e8f0;
-            background: #fff;
-            color: #0f172a;
-            cursor: pointer;
-        }
-        .nav-toggle span {
-            display: block;
-            width: 18px;
-            height: 2px;
-            background: #0f172a;
-            margin: 3px 0;
-        }
-        .mobile-nav {
-            display: none;
-            flex-direction: column;
-            gap: 8px;
-            margin-top: 10px;
-            padding: 10px 0;
-        }
-        .mobile-nav.open { display: flex; }
-        .menu {
-            display: flex;
-            align-items: center;
-            gap: 18px;
-        }
-        .menu a {
-            color: #0f172a;
-            font-weight: 600;
-        }
-        .menu a.active {
-            color: #2563eb;
-        }
-        .menu .caret {
-            margin-left: 4px;
-            font-size: 10px;
-            opacity: 0.6;
-        }
-        .actions {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-        .lang {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            font-size: 14px;
-            color: #334155;
-        }
-
-        .container {
-            max-width: 1100px;
-            margin: 24px auto 48px;
-            padding: 0 16px;
-            width: 100%;
-            flex: 1 0 auto;
-        }
-
-        .card {
-            background: var(--bg-1);
-            padding: 18px;
-            border-radius: var(--radius-1);
-            box-shadow: var(--shadow-2);
-            margin-bottom: 18px;
-            border: 1px solid #eef2f7;
-            animation: rise 420ms ease both;
-        }
-
-        @keyframes rise {
-            from { transform: translateY(8px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-
-        .btn {
-            margin-top: 12px;
-            padding: 10px 16px;
-            border: 0;
-            border-radius: 10px;
-            background: linear-gradient(135deg, var(--brand-1), var(--brand-2));
-            color: #fff;
-            font-weight: 700;
-            cursor: pointer;
-            box-shadow: 0 10px 18px rgba(29, 78, 216, 0.25);
-            transition: transform 140ms ease, box-shadow 140ms ease;
-        }
-        .btn:hover { transform: translateY(-1px); }
-        .btn:disabled { opacity: 0.5; cursor: not-allowed; box-shadow: none; }
-        .btn.secondary { background: #0f172a; box-shadow: none; }
-
-        .hero {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 12px 20px;
-            align-items: center;
-            justify-content: space-between;
-        }
-        .hero h3 { margin: 0; font-size: 20px; }
-        .pill {
-            padding: 6px 12px;
-            background: #e0f2fe;
-            color: #075985;
-            border-radius: 999px;
-            font-size: 12px;
-            font-weight: 700;
-        }
-        .status-row {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-            font-size: 13px;
-            color: var(--ink-2);
-        }
-        .status-chip {
-            background: #f8fafc;
-            border: 1px solid var(--line);
-            border-radius: 999px;
-            padding: 6px 10px;
-            font-weight: 600;
-        }
-
-        .quick-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 14px;
-            margin-top: 14px;
-        }
-        .quick-card {
-            border: 1px solid #eef2f7;
-            border-radius: 14px;
-            padding: 14px;
-            background: #fff;
-            box-shadow: var(--shadow-2);
-            text-decoration: none;
-            color: inherit;
-        }
-        .quick-card h4 { margin: 0 0 6px; font-size: 16px; }
-        .quick-card p { margin: 0; font-size: 13px; color: var(--muted); }
-        .footer {
-            margin-top: 32px;
-            padding: 18px 16px;
-            border-top: 1px solid #eef2f7;
-            color: var(--muted);
-            font-size: 13px;
-            text-align: center;
-            background: #ffffff;
-            margin-top: auto;
-        }
-
-        @media (max-width: 900px) {
-            .quick-grid { grid-template-columns: 1fr; }
-            .menu { display: none; }
-            .nav-toggle { display: inline-flex; }
-        }
-
-        @media (max-width: 720px) {
-            header { padding: 14px 16px; }
-            .container { padding: 0 12px; }
-            .btn { width: 100%; }
-        }
-    </style>
-</head>
-<body>
-<header>
-    <div class="brand">
-        <span class="brand-mark" aria-hidden="true"></span>
-        <span class="brand-text">Absensi Guru</span>
+@section('content')
+<div class="card">
+    <div class="hero">
+        <div>
+            <h3>Halo, {{ $teacher->name }}</h3>
+            <small>{{ now()->format('l, d F Y') }}</small>
+        </div>
+        <span class="pill">Ringkasan Hari Ini</span>
     </div>
-    <nav class="menu" aria-label="Menu utama">
-        <a href="{{ route('guru.dashboard') }}" class="active">Dashboard</a>
-        <a href="{{ route('guru.absen.page') }}">Absen</a>
-        <a href="{{ route('guru.absen.request.page') }}">Pengajuan</a>
-        <a href="{{ route('guru.absen.history') }}">Riwayat</a>
-    </nav>
-    <div class="actions">
-        <span class="lang">ID</span>
-        <form method="post" action="{{ route('guru.logout') }}">
-            @csrf
-            <button type="submit" class="btn secondary" style="background:#ef4444;">Keluar</button>
-        </form>
-        <button class="nav-toggle" type="button" aria-label="Menu" aria-expanded="false" aria-controls="mobile-nav">
-            <span></span>
-            <span></span>
-            <span></span>
-        </button>
+    <div class="status-row" style="margin-top:10px;">
+        <span class="status-chip">
+            Masuk:
+            @if ($todayAttendance?->check_in_time)
+                {{ $todayAttendance->check_in_time->format('H:i') }}
+            @else
+                belum
+            @endif
+        </span>
+        <span class="status-chip">
+            Pulang:
+            @if ($todayAttendance?->check_out_time)
+                {{ $todayAttendance->check_out_time->format('H:i') }}
+            @else
+                belum
+            @endif
+        </span>
     </div>
-</header>
-<nav id="mobile-nav" class="mobile-nav" aria-label="Menu mobile">
-    <a href="{{ route('guru.dashboard') }}" class="active">Dashboard</a>
-    <a href="{{ route('guru.absen.page') }}">Absen</a>
-    <a href="{{ route('guru.absen.request.page') }}">Pengajuan</a>
-    <a href="{{ route('guru.absen.history') }}">Riwayat</a>
-</nav>
-
-<div class="container">
-    <div class="card">
-        <div class="hero">
-            <div>
-                <h3>Halo, {{ $teacher->name }}</h3>
-                <small>{{ now()->format('l, d F Y') }}</small>
-            </div>
-            <span class="pill">Ringkasan Hari Ini</span>
-        </div>
-        <div class="status-row" style="margin-top:10px;">
-            <span class="status-chip">
-                Masuk:
-                @if ($todayAttendance?->check_in_time)
-                    {{ $todayAttendance->check_in_time->format('H:i') }}
-                @else
-                    belum
-                @endif
-            </span>
-            <span class="status-chip">
-                Pulang:
-                @if ($todayAttendance?->check_out_time)
-                    {{ $todayAttendance->check_out_time->format('H:i') }}
-                @else
-                    belum
-                @endif
-            </span>
-        </div>
-        <div class="quick-grid">
-            <a class="quick-card" href="{{ route('guru.absen.page') }}">
-                <h4>Absen Masuk/Pulang</h4>
-                <p>Catat kehadiran hari ini dengan cepat.</p>
-            </a>
-            <a class="quick-card" href="{{ route('guru.absen.request.page') }}">
-                <h4>Pengajuan Izin</h4>
-                <p>Ajukan sakit, izin, dinas luar, WFH, atau cuti.</p>
-            </a>
-            <a class="quick-card" href="{{ route('guru.absen.history') }}">
-                <h4>Riwayat</h4>
-                <p>Lihat riwayat absensi dan pengajuan.</p>
-            </a>
-        </div>
+    <div class="quick-grid">
+        <a class="quick-card" href="{{ route('guru.absen.page') }}">
+            <h4>Absen Masuk/Pulang</h4>
+            <p>Catat kehadiran hari ini dengan cepat.</p>
+        </a>
+        <a class="quick-card" href="{{ route('guru.absen.request.page') }}">
+            <h4>Pengajuan Izin</h4>
+            <p>Ajukan sakit, izin, dinas luar, WFH, atau cuti.</p>
+        </a>
+        <a class="quick-card" href="{{ route('guru.absen.history') }}">
+            <h4>Riwayat</h4>
+            <p>Lihat riwayat absensi dan pengajuan.</p>
+        </a>
     </div>
 </div>
-<footer class="footer">
-    <div>{{ $schoolSetting?->school_name ?? 'Sekolah' }}</div>
-    <div>{{ $schoolSetting?->address ?? '' }}</div>
-    <div>Tahun Ajaran {{ $schoolSetting?->academic_year ?? '-' }} • Semester {{ $schoolSetting?->semester ?? '-' }}</div>
-</footer>
-<script>
-    (function () {
-        const toggle = document.querySelector('.nav-toggle');
-        const mobileNav = document.getElementById('mobile-nav');
-        if (!toggle || !mobileNav) return;
-        toggle.addEventListener('click', () => {
-            const isOpen = mobileNav.classList.toggle('open');
-            toggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
-        });
-    })();
-</script>
-</body>
-</html>
+@endsection

@@ -15,6 +15,10 @@ class TeacherDashboardController extends Controller
     {
         $teacher = $request->user()->teacher;
         $schoolSetting = SchoolSetting::query()->first();
+        $pendingCount = AttendanceRequest::query()
+            ->where('teacher_id', $teacher->id)
+            ->where('status', AttendanceRequest::STATUS_PENDING)
+            ->count();
 
         $today = now()->toDateString();
         $todayAttendance = Attendance::query()
@@ -34,7 +38,8 @@ class TeacherDashboardController extends Controller
             'todayAttendance',
             'canCheckIn',
             'canCheckOut',
-            'schoolSetting'
+            'schoolSetting',
+            'pendingCount'
         ));
     }
 
@@ -42,6 +47,10 @@ class TeacherDashboardController extends Controller
     {
         $teacher = $request->user()->teacher;
         $schoolSetting = SchoolSetting::query()->first();
+        $pendingCount = AttendanceRequest::query()
+            ->where('teacher_id', $teacher->id)
+            ->where('status', AttendanceRequest::STATUS_PENDING)
+            ->count();
         $today = now()->toDateString();
         $todayAttendance = Attendance::query()
             ->where('teacher_id', $teacher->id)
@@ -60,7 +69,8 @@ class TeacherDashboardController extends Controller
             'todayAttendance',
             'canCheckIn',
             'canCheckOut',
-            'schoolSetting'
+            'schoolSetting',
+            'pendingCount'
         ));
     }
 
@@ -68,6 +78,10 @@ class TeacherDashboardController extends Controller
     {
         $teacher = $request->user()->teacher;
         $schoolSetting = SchoolSetting::query()->first();
+        $pendingCount = AttendanceRequest::query()
+            ->where('teacher_id', $teacher->id)
+            ->where('status', AttendanceRequest::STATUS_PENDING)
+            ->count();
         $requests = AttendanceRequest::query()
             ->where('teacher_id', $teacher->id)
             ->orderByDesc('start_date')
@@ -75,13 +89,17 @@ class TeacherDashboardController extends Controller
             ->limit(50)
             ->get();
 
-        return view('guru.pengajuan', compact('teacher', 'requests', 'schoolSetting'));
+        return view('guru.pengajuan', compact('teacher', 'requests', 'schoolSetting', 'pendingCount'));
     }
 
     public function historyPage(Request $request)
     {
         $teacher = $request->user()->teacher;
         $schoolSetting = SchoolSetting::query()->first();
+        $pendingCount = AttendanceRequest::query()
+            ->where('teacher_id', $teacher->id)
+            ->where('status', AttendanceRequest::STATUS_PENDING)
+            ->count();
         $requests = AttendanceRequest::query()
             ->where('teacher_id', $teacher->id)
             ->orderByDesc('start_date')
@@ -96,7 +114,7 @@ class TeacherDashboardController extends Controller
             ->limit(50)
             ->get();
 
-        return view('guru.riwayat', compact('teacher', 'requests', 'attendances', 'schoolSetting'));
+        return view('guru.riwayat', compact('teacher', 'requests', 'attendances', 'schoolSetting', 'pendingCount'));
     }
 
     public function storeCheckIn(Request $request)
