@@ -8,6 +8,8 @@ use App\Models\AttendanceRecap;
 use App\Models\AttendanceRecapRow;
 use App\Models\SchoolSetting;
 use App\Models\Teacher;
+use Dompdf\Dompdf;
+use Dompdf\Options;
 use Filament\Actions\Action;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
@@ -16,6 +18,7 @@ use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ListRecords;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class ListAttendanceRecaps extends ListRecords
 {
@@ -73,7 +76,7 @@ class ListAttendanceRecaps extends ListRecords
                             'Genap' => 'Genap',
                         ]),
                 ])
-                ->action(function (array $data): void {
+                ->action(function (array $data) {
                     $setting = SchoolSetting::query()->first();
                     if (! $setting) {
                         Notification::make()
@@ -83,6 +86,7 @@ class ListAttendanceRecaps extends ListRecords
                         return;
                     }
 
+                    $recap = null;
                     $type = $data['type'];
                     $academicYear = $data['academic_year'] ?: $setting->academic_year;
                     $semester = $data['semester'] ?: $setting->semester;
@@ -105,6 +109,7 @@ class ListAttendanceRecaps extends ListRecords
                     }
 
                     DB::transaction(function () use (
+                        &$recap,
                         $type,
                         $periodStart,
                         $periodEnd,
@@ -224,10 +229,35 @@ class ListAttendanceRecaps extends ListRecords
                         }
                     });
 
-                    Notification::make()
-                        ->title('Rekap berhasil dibuat')
-                        ->success()
-                        ->send();
+                    if (! $recap) {
+                        Notification::make()
+                            ->title('Gagal membuat rekap')
+                            ->danger()
+                            ->send();
+                        return;
+                    }
+
+                    $recap->load(['rows.teacher', 'generator']);
+                    $fileBase = 'rekap-absensi-' . ($recap->academic_year ?? 'periode') . '-' . ($recap->semester ?? '');
+                    $filename = Str::slug($fileBase, '-') . '.pdf';
+
+                    $html = view('admin.attendance_recaps.pdf', [
+                        'recap' => $recap,
+                        'rows' => $recap->rows,
+                        'school' => $setting,
+                    ])->render();
+
+                    $options = new Options();
+                    $options->set('isRemoteEnabled', true);
+                    $dompdf = new Dompdf($options);
+                    $dompdf->loadHtml($html);
+                    $dompdf->setPaper('A4', 'landscape');
+                    $dompdf->render();
+
+                    return response()->streamDownload(
+                        fn () => print($dompdf->output()),
+                        $filename
+                    );
                 }),
         ];
     }
