@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Attendance;
 use App\Models\AttendanceSetting;
 use App\Models\AttendanceRequest;
+use App\Models\SchoolSetting;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
@@ -13,6 +14,7 @@ class TeacherDashboardController extends Controller
     public function index(Request $request)
     {
         $teacher = $request->user()->teacher;
+        $schoolSetting = SchoolSetting::query()->first();
 
         $today = now()->toDateString();
         $todayAttendance = Attendance::query()
@@ -27,6 +29,59 @@ class TeacherDashboardController extends Controller
         $canCheckIn = ! $todayAttendance?->check_in_time && ! $blockedByAbsence;
         $canCheckOut = (bool) ($todayAttendance?->check_in_time && ! $todayAttendance?->check_out_time);
 
+        return view('guru.dashboard', compact(
+            'teacher',
+            'todayAttendance',
+            'canCheckIn',
+            'canCheckOut',
+            'schoolSetting'
+        ));
+    }
+
+    public function attendancePage(Request $request)
+    {
+        $teacher = $request->user()->teacher;
+        $schoolSetting = SchoolSetting::query()->first();
+        $today = now()->toDateString();
+        $todayAttendance = Attendance::query()
+            ->where('teacher_id', $teacher->id)
+            ->whereDate('date', $today)
+            ->first();
+
+        $blockedByAbsence = $todayAttendance
+            && $todayAttendance->check_in_status !== 'H'
+            && ! $todayAttendance->check_in_time;
+
+        $canCheckIn = ! $todayAttendance?->check_in_time && ! $blockedByAbsence;
+        $canCheckOut = (bool) ($todayAttendance?->check_in_time && ! $todayAttendance?->check_out_time);
+
+        return view('guru.absen', compact(
+            'teacher',
+            'todayAttendance',
+            'canCheckIn',
+            'canCheckOut',
+            'schoolSetting'
+        ));
+    }
+
+    public function requestPage(Request $request)
+    {
+        $teacher = $request->user()->teacher;
+        $schoolSetting = SchoolSetting::query()->first();
+        $requests = AttendanceRequest::query()
+            ->where('teacher_id', $teacher->id)
+            ->orderByDesc('start_date')
+            ->orderByDesc('id')
+            ->limit(50)
+            ->get();
+
+        return view('guru.pengajuan', compact('teacher', 'requests', 'schoolSetting'));
+    }
+
+    public function historyPage(Request $request)
+    {
+        $teacher = $request->user()->teacher;
+        $schoolSetting = SchoolSetting::query()->first();
         $requests = AttendanceRequest::query()
             ->where('teacher_id', $teacher->id)
             ->orderByDesc('start_date')
@@ -41,14 +96,7 @@ class TeacherDashboardController extends Controller
             ->limit(50)
             ->get();
 
-        return view('guru.dashboard', compact(
-            'teacher',
-            'requests',
-            'attendances',
-            'todayAttendance',
-            'canCheckIn',
-            'canCheckOut'
-        ));
+        return view('guru.riwayat', compact('teacher', 'requests', 'attendances', 'schoolSetting'));
     }
 
     public function storeCheckIn(Request $request)
@@ -97,7 +145,7 @@ class TeacherDashboardController extends Controller
             Attendance::create($payload);
         }
 
-        return redirect()->route('guru.dashboard')->with('status', 'Absen masuk berhasil dikirim.');
+        return redirect()->route('guru.absen.page')->with('status', 'Absen masuk berhasil dikirim.');
     }
 
     public function storeCheckOut(Request $request)
@@ -137,7 +185,7 @@ class TeacherDashboardController extends Controller
             'early_leave_minutes' => $earlyLeaveMinutes,
         ]);
 
-        return redirect()->route('guru.dashboard')->with('status', 'Absen pulang berhasil dikirim.');
+        return redirect()->route('guru.absen.page')->with('status', 'Absen pulang berhasil dikirim.');
     }
 
     public function storeAbsenceRequest(Request $request)
@@ -196,6 +244,6 @@ class TeacherDashboardController extends Controller
             'requested_by' => $request->user()->id,
         ]);
 
-        return redirect()->route('guru.dashboard')->with('status', 'Pengajuan berhasil dikirim dan menunggu verifikasi.');
+        return redirect()->route('guru.absen.request.page')->with('status', 'Pengajuan berhasil dikirim dan menunggu verifikasi.');
     }
 }

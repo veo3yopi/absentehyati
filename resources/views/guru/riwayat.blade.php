@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Dashboard Guru</title>
+    <title>Riwayat Guru</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&display=swap');
 
@@ -16,13 +16,8 @@
             --line: #e2e8f0;
             --brand-1: #1d4ed8;
             --brand-2: #0ea5e9;
-            --success: #16a34a;
-            --warning: #f59e0b;
-            --danger: #ef4444;
-            --shadow-1: 0 12px 30px rgba(15, 23, 42, 0.12);
             --shadow-2: 0 6px 16px rgba(15, 23, 42, 0.08);
             --radius-1: 14px;
-            --radius-2: 22px;
         }
 
         * { box-sizing: border-box; }
@@ -78,7 +73,6 @@
             font-size: 18px;
             color: var(--ink-1);
         }
-
         .nav {
             display: flex;
             gap: 10px;
@@ -139,11 +133,6 @@
         .menu a.active {
             color: #2563eb;
         }
-        .menu .caret {
-            margin-left: 4px;
-            font-size: 10px;
-            opacity: 0.6;
-        }
         .actions {
             display: flex;
             align-items: center;
@@ -172,13 +161,9 @@
             box-shadow: var(--shadow-2);
             margin-bottom: 18px;
             border: 1px solid #eef2f7;
-            animation: rise 420ms ease both;
         }
 
-        @keyframes rise {
-            from { transform: translateY(8px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
+        h2 { font-size: 18px; margin: 0 0 12px; }
 
         .btn {
             margin-top: 12px;
@@ -190,60 +175,16 @@
             font-weight: 700;
             cursor: pointer;
             box-shadow: 0 10px 18px rgba(29, 78, 216, 0.25);
-            transition: transform 140ms ease, box-shadow 140ms ease;
         }
-        .btn:hover { transform: translateY(-1px); }
-        .btn:disabled { opacity: 0.5; cursor: not-allowed; box-shadow: none; }
         .btn.secondary { background: #0f172a; box-shadow: none; }
 
-        .hero {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 12px 20px;
-            align-items: center;
-            justify-content: space-between;
-        }
-        .hero h3 { margin: 0; font-size: 20px; }
-        .pill {
-            padding: 6px 12px;
-            background: #e0f2fe;
-            color: #075985;
-            border-radius: 999px;
-            font-size: 12px;
-            font-weight: 700;
-        }
-        .status-row {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-            font-size: 13px;
-            color: var(--ink-2);
-        }
-        .status-chip {
-            background: #f8fafc;
-            border: 1px solid var(--line);
-            border-radius: 999px;
-            padding: 6px 10px;
-            font-weight: 600;
-        }
-
-        .quick-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 14px;
-            margin-top: 14px;
-        }
-        .quick-card {
-            border: 1px solid #eef2f7;
-            border-radius: 14px;
-            padding: 14px;
-            background: #fff;
-            box-shadow: var(--shadow-2);
-            text-decoration: none;
-            color: inherit;
-        }
-        .quick-card h4 { margin: 0 0 6px; font-size: 16px; }
-        .quick-card p { margin: 0; font-size: 13px; color: var(--muted); }
+        table { width: 100%; border-collapse: collapse; font-size: 14px; }
+        th, td { border-bottom: 1px solid #eef2f7; padding: 10px 8px; text-align: left; }
+        th { color: var(--muted); font-weight: 700; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .badge { padding: 4px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; display: inline-block; }
+        .pending { background: #fef3c7; color: #92400e; }
+        .approved { background: #dcfce7; color: #166534; }
+        .rejected { background: #fee2e2; color: #991b1b; }
         .footer {
             margin-top: 32px;
             padding: 18px 16px;
@@ -256,15 +197,37 @@
         }
 
         @media (max-width: 900px) {
-            .quick-grid { grid-template-columns: 1fr; }
             .menu { display: none; }
             .nav-toggle { display: inline-flex; }
         }
-
         @media (max-width: 720px) {
             header { padding: 14px 16px; }
             .container { padding: 0 12px; }
             .btn { width: 100%; }
+            table, thead, tbody, th, td, tr { display: block; }
+            thead { display: none; }
+            tbody tr {
+                border: 1px solid #eef2f7;
+                border-radius: 12px;
+                margin-bottom: 12px;
+                padding: 8px 10px;
+                background: #fff;
+            }
+            td {
+                border: 0;
+                padding: 6px 0;
+                display: flex;
+                justify-content: space-between;
+                gap: 12px;
+            }
+            td::before {
+                content: attr(data-label);
+                font-weight: 700;
+                color: var(--muted);
+                font-size: 12px;
+                text-transform: uppercase;
+                letter-spacing: 0.4px;
+            }
         }
     </style>
 </head>
@@ -275,10 +238,10 @@
         <span class="brand-text">Absensi Guru</span>
     </div>
     <nav class="menu" aria-label="Menu utama">
-        <a href="{{ route('guru.dashboard') }}" class="active">Dashboard</a>
+        <a href="{{ route('guru.dashboard') }}">Dashboard</a>
         <a href="{{ route('guru.absen.page') }}">Absen</a>
         <a href="{{ route('guru.absen.request.page') }}">Pengajuan</a>
-        <a href="{{ route('guru.absen.history') }}">Riwayat</a>
+        <a href="{{ route('guru.absen.history') }}" class="active">Riwayat</a>
     </nav>
     <div class="actions">
         <span class="lang">ID</span>
@@ -294,53 +257,105 @@
     </div>
 </header>
 <nav id="mobile-nav" class="mobile-nav" aria-label="Menu mobile">
-    <a href="{{ route('guru.dashboard') }}" class="active">Dashboard</a>
+    <a href="{{ route('guru.dashboard') }}">Dashboard</a>
     <a href="{{ route('guru.absen.page') }}">Absen</a>
     <a href="{{ route('guru.absen.request.page') }}">Pengajuan</a>
-    <a href="{{ route('guru.absen.history') }}">Riwayat</a>
+    <a href="{{ route('guru.absen.history') }}" class="active">Riwayat</a>
 </nav>
 
 <div class="container">
     <div class="card">
-        <div class="hero">
-            <div>
-                <h3>Halo, {{ $teacher->name }}</h3>
-                <small>{{ now()->format('l, d F Y') }}</small>
-            </div>
-            <span class="pill">Ringkasan Hari Ini</span>
-        </div>
-        <div class="status-row" style="margin-top:10px;">
-            <span class="status-chip">
-                Masuk:
-                @if ($todayAttendance?->check_in_time)
-                    {{ $todayAttendance->check_in_time->format('H:i') }}
-                @else
-                    belum
-                @endif
-            </span>
-            <span class="status-chip">
-                Pulang:
-                @if ($todayAttendance?->check_out_time)
-                    {{ $todayAttendance->check_out_time->format('H:i') }}
-                @else
-                    belum
-                @endif
-            </span>
-        </div>
-        <div class="quick-grid">
-            <a class="quick-card" href="{{ route('guru.absen.page') }}">
-                <h4>Absen Masuk/Pulang</h4>
-                <p>Catat kehadiran hari ini dengan cepat.</p>
-            </a>
-            <a class="quick-card" href="{{ route('guru.absen.request.page') }}">
-                <h4>Pengajuan Izin</h4>
-                <p>Ajukan sakit, izin, dinas luar, WFH, atau cuti.</p>
-            </a>
-            <a class="quick-card" href="{{ route('guru.absen.history') }}">
-                <h4>Riwayat</h4>
-                <p>Lihat riwayat absensi dan pengajuan.</p>
-            </a>
-        </div>
+        <h2>Riwayat Absensi</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Tanggal</th>
+                    <th>Masuk</th>
+                    <th>Pulang</th>
+                </tr>
+            </thead>
+            <tbody>
+                @forelse ($attendances as $att)
+                    <tr>
+                        <td data-label="Tanggal">{{ $att->date->format('Y-m-d') }}</td>
+                        <td data-label="Masuk">
+                            @switch($att->check_in_status)
+                                @case('H') Hadir @break
+                                @case('S') Sakit @break
+                                @case('I') Izin @break
+                                @case('A') Alfa @break
+                                @case('D') Dinas Luar @break
+                                @case('W') WFH @break
+                                @case('C') Cuti @break
+                                @default {{ $att->check_in_status }}
+                            @endswitch
+                            @if ($att->check_in_time)
+                                ({{ $att->check_in_time->format('H:i') }})
+                            @endif
+                        </td>
+                        <td data-label="Pulang">
+                            @if ($att->check_out_time)
+                                @switch($att->check_out_status)
+                                    @case('H') Hadir @break
+                                    @case('S') Sakit @break
+                                    @case('I') Izin @break
+                                    @case('A') Alfa @break
+                                    @case('D') Dinas Luar @break
+                                    @case('W') WFH @break
+                                    @case('C') Cuti @break
+                                    @default {{ $att->check_out_status }}
+                                @endswitch
+                                ({{ $att->check_out_time->format('H:i') }})
+                            @else
+                                -
+                            @endif
+                        </td>
+                    </tr>
+                @empty
+                    <tr><td colspan="3">Belum ada data absensi.</td></tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
+
+    <div class="card">
+        <h2>Riwayat Pengajuan</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Periode</th>
+                    <th>Jenis</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                @forelse ($requests as $req)
+                    <tr>
+                        <td data-label="Periode">
+                            {{ $req->start_date?->format('Y-m-d') ?? $req->date->format('Y-m-d') }}
+                            @if (($req->end_date ?? $req->date)->format('Y-m-d') !== ($req->start_date ?? $req->date)->format('Y-m-d'))
+                                - {{ $req->end_date?->format('Y-m-d') }}
+                            @endif
+                        </td>
+                        <td data-label="Jenis">
+                            @switch($req->type)
+                                @case('S') Sakit @break
+                                @case('I') Izin @break
+                                @case('D') Dinas Luar @break
+                                @case('W') WFH @break
+                                @case('C') Cuti @break
+                                @default {{ $req->type }}
+                            @endswitch
+                        </td>
+                        <td data-label="Status">
+                            <span class="badge {{ $req->status }}">{{ ucfirst($req->status) }}</span>
+                        </td>
+                    </tr>
+                @empty
+                    <tr><td colspan="3">Belum ada pengajuan.</td></tr>
+                @endforelse
+            </tbody>
+        </table>
     </div>
 </div>
 <footer class="footer">
