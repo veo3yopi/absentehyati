@@ -5,9 +5,11 @@ namespace App\Filament\Resources\AttendanceRequests;
 use App\Filament\Resources\AttendanceRequests\Pages\CreateAttendanceRequest;
 use App\Filament\Resources\AttendanceRequests\Pages\EditAttendanceRequest;
 use App\Filament\Resources\AttendanceRequests\Pages\ListAttendanceRequests;
+use App\Filament\Resources\AttendanceRequests\Pages\ViewAttendanceRequest;
 use App\Filament\Resources\AttendanceRequests\Schemas\AttendanceRequestForm;
 use App\Filament\Resources\AttendanceRequests\Tables\AttendanceRequestsTable;
 use App\Models\AttendanceRequest;
+use Illuminate\Database\Eloquent\Model;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
@@ -24,7 +26,7 @@ class AttendanceRequestResource extends Resource
 
     protected static ?int $navigationSort = 30;
 
-    protected static ?string $recordTitleAttribute = 'start_date';
+    protected static ?string $recordTitleAttribute = null;
 
     public static function form(Schema $schema): Schema
     {
@@ -53,6 +55,7 @@ class AttendanceRequestResource extends Resource
         return [
             'index' => ListAttendanceRequests::route('/'),
             'create' => CreateAttendanceRequest::route('/create'),
+            'view' => ViewAttendanceRequest::route('/{record}'),
             'edit' => EditAttendanceRequest::route('/{record}/edit'),
         ];
     }
@@ -70,5 +73,17 @@ class AttendanceRequestResource extends Resource
     public static function canDelete(\Illuminate\Database\Eloquent\Model $record): bool
     {
         return false;
+    }
+
+    public static function getRecordTitle(?Model $record): string
+    {
+        if (! $record instanceof AttendanceRequest) {
+            return '';
+        }
+
+        $startDate = $record->start_date?->format('d/m/Y') ?? $record->date?->format('d/m/Y') ?? '-';
+        $teacherName = $record->teacher?->name ?? 'Guru';
+
+        return $teacherName . ' - ' . $startDate;
     }
 }

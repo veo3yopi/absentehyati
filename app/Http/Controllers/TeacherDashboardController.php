@@ -210,18 +210,37 @@ class TeacherDashboardController extends Controller
     {
         $teacher = $request->user()->teacher;
 
-        $data = $request->validate([
-            'type' => ['required', Rule::in([
-                AttendanceRequest::TYPE_SICK,
-                AttendanceRequest::TYPE_LEAVE,
-                AttendanceRequest::TYPE_OUTSIDE,
-                AttendanceRequest::TYPE_WFH,
-                AttendanceRequest::TYPE_CUTI,
-            ])],
-            'start_date' => ['required', 'date'],
-            'end_date' => ['required', 'date', 'after_or_equal:start_date'],
-            'reason' => ['required', 'string', 'max:1000'],
-        ]);
+        $data = $request->validate(
+            [
+                'type' => ['required', Rule::in([
+                    AttendanceRequest::TYPE_SICK,
+                    AttendanceRequest::TYPE_LEAVE,
+                    AttendanceRequest::TYPE_OUTSIDE,
+                    AttendanceRequest::TYPE_WFH,
+                    AttendanceRequest::TYPE_CUTI,
+                ])],
+                'start_date' => ['required', 'date'],
+                'end_date' => ['required', 'date', 'after_or_equal:start_date'],
+                'reason' => ['required', 'string', 'max:1000'],
+            ],
+            [
+                'type.required' => 'Jenis pengajuan wajib dipilih.',
+                'type.in' => 'Jenis pengajuan tidak valid.',
+                'start_date.required' => 'Tanggal mulai wajib diisi.',
+                'start_date.date' => 'Format tanggal mulai tidak valid.',
+                'end_date.required' => 'Tanggal selesai wajib diisi.',
+                'end_date.date' => 'Format tanggal selesai tidak valid.',
+                'end_date.after_or_equal' => 'Tanggal selesai harus sama atau setelah tanggal mulai.',
+                'reason.required' => 'Alasan wajib diisi.',
+                'reason.max' => 'Alasan maksimal 1000 karakter.',
+            ],
+            [
+                'type' => 'Jenis pengajuan',
+                'start_date' => 'Tanggal mulai',
+                'end_date' => 'Tanggal selesai',
+                'reason' => 'Alasan',
+            ],
+        );
 
         $start = $data['start_date'];
         $end = $data['end_date'];

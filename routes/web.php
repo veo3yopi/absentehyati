@@ -6,6 +6,8 @@ use App\Http\Middleware\EnsureTeacher;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
+    // login guru
+
     return view('welcome');
 });
 

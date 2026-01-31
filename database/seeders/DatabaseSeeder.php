@@ -25,6 +25,14 @@ class DatabaseSeeder extends Seeder
             'name' => 'super_admin',
             'guard_name' => config('auth.defaults.guard', 'web'),
         ]);
+        Role::firstOrCreate([
+            'name' => 'admin',
+            'guard_name' => config('auth.defaults.guard', 'web'),
+        ]);
+        Role::firstOrCreate([
+            'name' => 'operator',
+            'guard_name' => config('auth.defaults.guard', 'web'),
+        ]);
 
         $admin = User::firstOrCreate(
             ['email' => 'admin@mail.com'],

@@ -6,6 +6,7 @@ use App\Models\Attendance;
 use App\Models\AttendanceRequest;
 use Filament\Actions\Action;
 use Filament\Actions\EditAction;
+use Filament\Actions\ViewAction;
 use Filament\Notifications\Notification;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
@@ -77,6 +78,7 @@ class AttendanceRequestsTable
                     ->default(AttendanceRequest::STATUS_PENDING),
             ])
             ->recordActions([
+                ViewAction::make(),
                 EditAction::make()
                     ->visible(fn (AttendanceRequest $record): bool => $record->status === AttendanceRequest::STATUS_PENDING),
                 Action::make('approve')
