@@ -14,6 +14,9 @@ class TeachersTable
     {
         return $table
             ->columns([
+                TextColumn::make('row_number')
+                    ->label('No.')
+                    ->rowIndex(),
                 TextColumn::make('nip')
                     ->searchable(),
                 TextColumn::make('nuptk')

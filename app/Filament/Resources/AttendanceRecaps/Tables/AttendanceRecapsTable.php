@@ -11,6 +11,9 @@ class AttendanceRecapsTable
     {
         return $table
             ->columns([
+                TextColumn::make('row_number')
+                    ->label('No.')
+                    ->rowIndex(),
                 TextColumn::make('type')
                     ->searchable(),
                 TextColumn::make('period_start')

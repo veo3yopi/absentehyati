@@ -14,6 +14,9 @@ class AttendancesTable
     {
         return $table
             ->columns([
+                TextColumn::make('row_number')
+                    ->label('No.')
+                    ->rowIndex(),
                 TextColumn::make('teacher.name')
                     ->searchable(),
                 TextColumn::make('date')

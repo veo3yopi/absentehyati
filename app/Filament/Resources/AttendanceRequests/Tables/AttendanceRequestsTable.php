@@ -20,11 +20,14 @@ class AttendanceRequestsTable
     {
         return $table
             ->columns([
+                TextColumn::make('row_number')
+                    ->label('No.')
+                    ->rowIndex(),
                 TextColumn::make('teacher.name')
                     ->searchable(),
                 TextColumn::make('type')
                     ->label('Jenis')
-                    ->formatStateUsing(fn (?string $state): string => match ($state) {
+                    ->formatStateUsing(fn(?string $state): string => match ($state) {
                         AttendanceRequest::TYPE_SICK => 'Sakit',
                         AttendanceRequest::TYPE_LEAVE => 'Izin',
                         AttendanceRequest::TYPE_OUTSIDE => 'Dinas Luar',
@@ -46,13 +49,13 @@ class AttendanceRequestsTable
                     ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('status')
                     ->badge()
-                    ->color(fn (string $state): string => match ($state) {
+                    ->color(fn(string $state): string => match ($state) {
                         AttendanceRequest::STATUS_PENDING => 'warning',
                         AttendanceRequest::STATUS_APPROVED => 'success',
                         AttendanceRequest::STATUS_REJECTED => 'danger',
                         default => 'gray',
                     })
-                    ->formatStateUsing(fn (string $state): string => match ($state) {
+                    ->formatStateUsing(fn(string $state): string => match ($state) {
                         AttendanceRequest::STATUS_PENDING => 'Pending',
                         AttendanceRequest::STATUS_APPROVED => 'Disetujui',
                         AttendanceRequest::STATUS_REJECTED => 'Ditolak',
@@ -80,11 +83,11 @@ class AttendanceRequestsTable
             ->recordActions([
                 ViewAction::make(),
                 EditAction::make()
-                    ->visible(fn (AttendanceRequest $record): bool => $record->status === AttendanceRequest::STATUS_PENDING),
+                    ->visible(fn(AttendanceRequest $record): bool => $record->status === AttendanceRequest::STATUS_PENDING),
                 Action::make('approve')
                     ->label('Setujui')
                     ->color('success')
-                    ->visible(fn (AttendanceRequest $record): bool => $record->status === AttendanceRequest::STATUS_PENDING)
+                    ->visible(fn(AttendanceRequest $record): bool => $record->status === AttendanceRequest::STATUS_PENDING)
                     ->action(function (AttendanceRequest $record): void {
                         if ($record->status !== AttendanceRequest::STATUS_PENDING) {
                             return;
@@ -155,7 +158,7 @@ class AttendanceRequestsTable
                 Action::make('reject')
                     ->label('Tolak')
                     ->color('danger')
-                    ->visible(fn (AttendanceRequest $record): bool => $record->status === AttendanceRequest::STATUS_PENDING)
+                    ->visible(fn(AttendanceRequest $record): bool => $record->status === AttendanceRequest::STATUS_PENDING)
                     ->action(function (AttendanceRequest $record): void {
                         if ($record->status !== AttendanceRequest::STATUS_PENDING) {
                             return;
