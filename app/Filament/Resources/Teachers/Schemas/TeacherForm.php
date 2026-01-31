@@ -5,7 +5,7 @@ namespace App\Filament\Resources\Teachers\Schemas;
 use Illuminate\Database\Eloquent\Model;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Get;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Illuminate\Validation\Rule;
 
@@ -59,6 +59,9 @@ class TeacherForm
                     ->label('Konfirmasi Password')
                     ->password()
                     ->same('user_password')
+                    ->validationMessages([
+                        'same' => 'Konfirmasi password harus sama dengan password.',
+                    ])
                     ->dehydrated(false),
             ]);
     }
