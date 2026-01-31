@@ -47,7 +47,7 @@
     <div class="header">
         <div class="title">Rekap Absensi Guru</div>
         <div class="meta">
-            {{ $school->name ?? 'Sekolah' }}
+            {{ $school->school_name ?? 'Sekolah' }}
             @if(!empty($school?->address))
                 &middot; {{ $school->address }}
             @endif

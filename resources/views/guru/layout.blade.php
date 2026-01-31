@@ -49,11 +49,11 @@
         }
 
         .brand {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-weight: 800;
-            letter-spacing: -0.2px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-weight: 800;
+        letter-spacing: -0.2px;
         }
         .brand-mark {
             width: 26px;
@@ -62,6 +62,13 @@
             background: linear-gradient(135deg, #ef4444, #fb7185);
             transform: rotate(8deg);
             display: inline-block;
+        }
+        .brand-logo {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 1px solid #e2e8f0;
         }
         .brand-text {
             font-size: 18px;
@@ -245,8 +252,15 @@
 <body>
 <header>
     <div class="brand">
-        <span class="brand-mark" aria-hidden="true"></span>
-        <span class="brand-text">Absensi Guru</span>
+        @php
+            $logoUrl = $schoolSetting?->getFirstMediaUrl('hero_logo');
+        @endphp
+        @if (!empty($logoUrl))
+            <img src="{{ $logoUrl }}" alt="Logo sekolah" class="brand-logo">
+        @else
+            <span class="brand-mark" aria-hidden="true"></span>
+        @endif
+        <span class="brand-text">{{ $schoolSetting?->school_name ?? 'Absensi Guru' }}</span>
     </div>
     <nav class="menu" aria-label="Menu utama">
         <a href="{{ route('guru.dashboard') }}" class="{{ request()->routeIs('guru.dashboard') ? 'active' : '' }}">Dashboard</a>

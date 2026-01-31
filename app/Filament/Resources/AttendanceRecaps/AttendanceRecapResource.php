@@ -37,6 +37,9 @@ class AttendanceRecapResource extends Resource
         return $table
             ->defaultSort('generated_at', 'desc')
             ->columns([
+                \Filament\Tables\Columns\TextColumn::make('row_number')
+                    ->label('No.')
+                    ->rowIndex(),
                 \Filament\Tables\Columns\TextColumn::make('type'),
                 \Filament\Tables\Columns\TextColumn::make('period_start')->date(),
                 \Filament\Tables\Columns\TextColumn::make('period_end')->date(),
