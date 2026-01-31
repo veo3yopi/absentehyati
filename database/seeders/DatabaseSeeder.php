@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\User;
+use App\Models\AttendanceSetting;
 use App\Models\SchoolSetting;
 use App\Models\Teacher;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
@@ -44,6 +45,11 @@ class DatabaseSeeder extends Seeder
                 'academic_year' => '2025/2026',
                 'semester' => 'Genap',
             ]
+        );
+
+        AttendanceSetting::firstOrCreate(
+            ['start_time' => '07:00:00', 'end_time' => '16:00:00'],
+            ['late_tolerance_minutes' => 15]
         );
 
         $teachers = [

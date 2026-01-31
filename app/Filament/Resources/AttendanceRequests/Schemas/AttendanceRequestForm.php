@@ -2,14 +2,12 @@
 
 namespace App\Filament\Resources\AttendanceRequests\Schemas;
 
-use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Get;
 use Filament\Schemas\Schema;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Validation\Rule;
+use Filament\Forms\Components\DatePicker;
 
 class AttendanceRequestForm
 {
@@ -20,34 +18,26 @@ class AttendanceRequestForm
                 Select::make('teacher_id')
                     ->relationship('teacher', 'name')
                     ->required(),
-                DatePicker::make('date')
+                Select::make('type')
                     ->required()
-                    ->rules([
-                        fn (Get $get, ?Model $record) => Rule::unique('attendance_requests', 'date')
-                            ->where('teacher_id', $get('teacher_id'))
-                            ->where('status', 'pending')
-                            ->ignore($record),
+                    ->options([
+                        'S' => 'Sakit',
+                        'I' => 'Izin',
+                        'D' => 'Dinas Luar',
+                        'W' => 'WFH',
+                        'C' => 'Cuti',
                     ]),
-                Select::make('check_in_status')
+                DatePicker::make('start_date')
+                    ->label('Tanggal Mulai')
+                    ->required(),
+                DatePicker::make('end_date')
+                    ->label('Tanggal Selesai')
                     ->required()
-                    ->options([
-                        'H' => 'Hadir',
-                        'S' => 'Sakit',
-                        'I' => 'Izin',
-                        'A' => 'Alfa',
-                    ])
-                    ->default('H'),
-                Select::make('check_out_status')
-                    ->required()
-                    ->options([
-                        'H' => 'Hadir',
-                        'S' => 'Sakit',
-                        'I' => 'Izin',
-                        'A' => 'Alfa',
-                    ])
-                    ->default('H'),
+                    ->rules(['after_or_equal:start_date']),
                 Textarea::make('reason')
                     ->columnSpanFull(),
+                Hidden::make('date')
+                    ->dehydrateStateUsing(fn (Get $get) => $get('start_date')),
                 Hidden::make('status')
                     ->default('pending'),
                 Hidden::make('requested_by')

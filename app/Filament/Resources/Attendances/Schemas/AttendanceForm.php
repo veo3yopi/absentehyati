@@ -33,6 +33,9 @@ class AttendanceForm
                         'S' => 'Sakit',
                         'I' => 'Izin',
                         'A' => 'Alfa',
+                        'D' => 'Dinas Luar',
+                        'W' => 'WFH',
+                        'C' => 'Cuti',
                     ])
                     ->default('H'),
                 Select::make('check_out_status')
@@ -42,6 +45,9 @@ class AttendanceForm
                         'S' => 'Sakit',
                         'I' => 'Izin',
                         'A' => 'Alfa',
+                        'D' => 'Dinas Luar',
+                        'W' => 'WFH',
+                        'C' => 'Cuti',
                     ])
                     ->default('H'),
                 Textarea::make('note')

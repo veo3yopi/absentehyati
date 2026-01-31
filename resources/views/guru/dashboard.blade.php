@@ -288,23 +288,15 @@
             <div id="checkin-fields">
                 <label>Status Absen Masuk</label>
                 <select id="checkin-status" name="check_in_status" {{ $canCheckIn ? '' : 'disabled' }}>
-                    @foreach (['H' => 'Hadir', 'S' => 'Sakit', 'I' => 'Izin', 'A' => 'Alfa'] as $k => $v)
-                        <option value="{{ $k }}" @selected(old('check_in_status', 'H') === $k)>{{ $v }}</option>
-                    @endforeach
+                    <option value="H" @selected(old('check_in_status', 'H') === 'H')>Hadir</option>
                 </select>
                 @error('check_in_status')<div class="error">{{ $message }}</div>@enderror
-
-                <label>Alasan (wajib untuk S/I/A)</label>
-                <textarea id="checkin-reason" name="reason" {{ $canCheckIn ? '' : 'disabled' }}>{{ old('reason') }}</textarea>
-                @error('reason')<div class="error">{{ $message }}</div>@enderror
             </div>
 
             <div id="checkout-fields" style="display:none;">
                 <label>Status Absen Pulang</label>
                 <select id="checkout-status" name="check_out_status" {{ $canCheckOut ? '' : 'disabled' }}>
-                    @foreach (['H' => 'Hadir', 'S' => 'Sakit', 'I' => 'Izin', 'A' => 'Alfa'] as $k => $v)
-                        <option value="{{ $k }}" @selected(old('check_out_status', 'H') === $k)>{{ $v }}</option>
-                    @endforeach
+                    <option value="H" @selected(old('check_out_status', 'H') === 'H')>Hadir</option>
                 </select>
                 @error('check_out_status')<div class="error">{{ $message }}</div>@enderror
             </div>
@@ -313,10 +305,55 @@
             <p id="attendance-hint" style="font-size:12px; color:#6b7280; margin-top:10px;">
                 @if ($todayAttendance?->check_in_time)
                     Absen masuk tercatat: {{ $todayAttendance->check_in_time->format('H:i') }}
+                @elseif ($todayAttendance && $todayAttendance->check_in_status !== 'H')
+                    Status hari ini: 
+                    @switch($todayAttendance->check_in_status)
+                        @case('S') Sakit @break
+                        @case('I') Izin @break
+                        @case('D') Dinas Luar @break
+                        @case('W') WFH @break
+                        @case('C') Cuti @break
+                        @case('A') Alfa @break
+                        @default {{ $todayAttendance->check_in_status }}
+                    @endswitch
                 @else
                     Belum absen masuk hari ini.
                 @endif
             </p>
+        </form>
+    </div>
+
+    <div class="card">
+        <h2>Pengajuan Izin / Sakit / Dinas / WFH / Cuti</h2>
+        <form method="post" action="{{ route('guru.absen.request') }}">
+            @csrf
+            <label>Jenis Pengajuan</label>
+            <select name="type" required>
+                @foreach (['S' => 'Sakit', 'I' => 'Izin', 'D' => 'Dinas Luar', 'W' => 'WFH', 'C' => 'Cuti'] as $k => $v)
+                    <option value="{{ $k }}" @selected(old('type') === $k)>{{ $v }}</option>
+                @endforeach
+            </select>
+            @error('type')<div class="error">{{ $message }}</div>@enderror
+
+            <div class="split" style="margin-top:8px;">
+                <div>
+                    <label>Tanggal Mulai</label>
+                    <input type="date" name="start_date" value="{{ old('start_date') }}" required>
+                    @error('start_date')<div class="error">{{ $message }}</div>@enderror
+                </div>
+                <div>
+                    <label>Tanggal Selesai</label>
+                    <input type="date" name="end_date" value="{{ old('end_date') }}" required>
+                    @error('end_date')<div class="error">{{ $message }}</div>@enderror
+                </div>
+            </div>
+
+            <label>Alasan</label>
+            <textarea name="reason" required>{{ old('reason') }}</textarea>
+            @error('reason')<div class="error">{{ $message }}</div>@enderror
+
+            <button type="submit" class="btn">Kirim Pengajuan</button>
+            <p class="hint">Pengajuan akan diverifikasi admin sebelum masuk rekap.</p>
         </form>
     </div>
 
@@ -326,25 +363,31 @@
             <table>
                 <thead>
                     <tr>
-                        <th>Tanggal</th>
+                        <th>Periode</th>
+                        <th>Jenis</th>
                         <th>Status</th>
-                        <th>Status Pengajuan</th>
                     </tr>
                 </thead>
                 <tbody>
                     @forelse ($requests as $req)
                         <tr>
-                            <td data-label="Tanggal">{{ $req->date->format('Y-m-d') }}</td>
-                            <td data-label="Status">
-                                @switch($req->check_in_status)
-                                    @case('H') Hadir @break
+                            <td data-label="Periode">
+                                {{ $req->start_date?->format('Y-m-d') ?? $req->date->format('Y-m-d') }}
+                                @if (($req->end_date ?? $req->date)->format('Y-m-d') !== ($req->start_date ?? $req->date)->format('Y-m-d'))
+                                    - {{ $req->end_date?->format('Y-m-d') }}
+                                @endif
+                            </td>
+                            <td data-label="Jenis">
+                                @switch($req->type)
                                     @case('S') Sakit @break
                                     @case('I') Izin @break
-                                    @case('A') Alfa @break
-                                    @default {{ $req->check_in_status }}
+                                    @case('D') Dinas Luar @break
+                                    @case('W') WFH @break
+                                    @case('C') Cuti @break
+                                    @default {{ $req->type }}
                                 @endswitch
                             </td>
-                            <td data-label="Status Pengajuan">
+                            <td data-label="Status">
                                 <span class="badge {{ $req->status }}">
                                     {{ ucfirst($req->status) }}
                                 </span>
@@ -377,6 +420,9 @@
                                     @case('S') Sakit @break
                                     @case('I') Izin @break
                                     @case('A') Alfa @break
+                                    @case('D') Dinas Luar @break
+                                    @case('W') WFH @break
+                                    @case('C') Cuti @break
                                     @default {{ $att->check_in_status }}
                                 @endswitch
                                 @if ($att->check_in_time)
@@ -390,6 +436,9 @@
                                         @case('S') Sakit @break
                                         @case('I') Izin @break
                                         @case('A') Alfa @break
+                                        @case('D') Dinas Luar @break
+                                        @case('W') WFH @break
+                                        @case('C') Cuti @break
                                         @default {{ $att->check_out_status }}
                                     @endswitch
                                     ({{ $att->check_out_time->format('H:i') }})
@@ -416,7 +465,6 @@
         const hint = document.getElementById('attendance-hint');
         const checkinStatus = document.getElementById('checkin-status');
         const checkoutStatus = document.getElementById('checkout-status');
-        const checkinReason = document.getElementById('checkin-reason');
         const canCheckIn = {{ $canCheckIn ? 'true' : 'false' }};
         const canCheckOut = {{ $canCheckOut ? 'true' : 'false' }};
 
@@ -427,7 +475,6 @@
             checkinStatus.required = isCheckIn;
             checkoutStatus.required = !isCheckIn;
             checkinStatus.disabled = isCheckIn ? !canCheckIn : true;
-            checkinReason.disabled = isCheckIn ? !canCheckIn : true;
             checkoutStatus.disabled = isCheckIn ? true : !canCheckOut;
             form.action = isCheckIn
                 ? "{{ route('guru.absen.checkin') }}"
@@ -435,7 +482,7 @@
             submitBtn.textContent = isCheckIn ? 'Simpan Absen Masuk' : 'Simpan Absen Pulang';
             submitBtn.disabled = isCheckIn ? !canCheckIn : !canCheckOut;
             hint.textContent = isCheckIn
-                ? "{{ $todayAttendance?->check_in_time ? 'Absen masuk tercatat: ' . $todayAttendance->check_in_time->format('H:i') : 'Belum absen masuk hari ini.' }}"
+                ? "{{ $todayAttendance?->check_in_time ? 'Absen masuk tercatat: ' . $todayAttendance->check_in_time->format('H:i') : (($todayAttendance && $todayAttendance->check_in_status !== 'H') ? 'Status hari ini: ' . match($todayAttendance->check_in_status) { 'S' => 'Sakit', 'I' => 'Izin', 'D' => 'Dinas Luar', 'W' => 'WFH', 'C' => 'Cuti', 'A' => 'Alfa', default => $todayAttendance->check_in_status } : 'Belum absen masuk hari ini.') }}"
                 : "{{ $todayAttendance?->check_out_time ? 'Absen pulang tercatat: ' . $todayAttendance->check_out_time->format('H:i') : 'Absen pulang hanya bisa setelah absen masuk.' }}";
         }
 

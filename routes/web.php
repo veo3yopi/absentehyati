@@ -18,5 +18,6 @@ Route::prefix('guru')->group(function () {
         Route::get('/', [TeacherDashboardController::class, 'index'])->name('guru.dashboard');
         Route::post('/absen-masuk', [TeacherDashboardController::class, 'storeCheckIn'])->name('guru.absen.checkin');
         Route::post('/absen-pulang', [TeacherDashboardController::class, 'storeCheckOut'])->name('guru.absen.checkout');
+        Route::post('/pengajuan-absen', [TeacherDashboardController::class, 'storeAbsenceRequest'])->name('guru.absen.request');
     });
 });

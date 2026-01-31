@@ -21,13 +21,28 @@ class AttendanceRequestsTable
             ->columns([
                 TextColumn::make('teacher.name')
                     ->searchable(),
-                TextColumn::make('date')
+                TextColumn::make('type')
+                    ->label('Jenis')
+                    ->formatStateUsing(fn (?string $state): string => match ($state) {
+                        AttendanceRequest::TYPE_SICK => 'Sakit',
+                        AttendanceRequest::TYPE_LEAVE => 'Izin',
+                        AttendanceRequest::TYPE_OUTSIDE => 'Dinas Luar',
+                        AttendanceRequest::TYPE_WFH => 'WFH',
+                        AttendanceRequest::TYPE_CUTI => 'Cuti',
+                        default => $state ?? '-',
+                    }),
+                TextColumn::make('start_date')
+                    ->label('Mulai')
                     ->date()
                     ->sortable(),
-                TextColumn::make('check_in_status')
-                    ->label('Masuk'),
-                TextColumn::make('check_out_status')
-                    ->label('Pulang'),
+                TextColumn::make('end_date')
+                    ->label('Selesai')
+                    ->date()
+                    ->sortable(),
+                TextColumn::make('reason')
+                    ->label('Alasan')
+                    ->limit(40)
+                    ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('status')
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
@@ -67,26 +82,61 @@ class AttendanceRequestsTable
                 Action::make('approve')
                     ->label('Setujui')
                     ->color('success')
-                    ->visible(fn (AttendanceRequest $record): bool => $record->status === AttendanceRequest::STATUS_PENDING
-                        && $record->check_in_submitted
-                        && $record->check_out_submitted)
+                    ->visible(fn (AttendanceRequest $record): bool => $record->status === AttendanceRequest::STATUS_PENDING)
                     ->action(function (AttendanceRequest $record): void {
                         if ($record->status !== AttendanceRequest::STATUS_PENDING) {
                             return;
                         }
 
-                        DB::transaction(function () use ($record): void {
-                            Attendance::updateOrCreate(
-                                [
-                                    'teacher_id' => $record->teacher_id,
-                                    'date' => $record->date,
-                                ],
-                                [
-                                    'check_in_status' => $record->check_in_status,
-                                    'check_out_status' => $record->check_out_status,
-                                    'note' => $record->reason,
-                                ],
-                            );
+                        $start = $record->start_date ?? $record->date;
+                        $end = $record->end_date ?? $record->date;
+                        $conflict = Attendance::query()
+                            ->where('teacher_id', $record->teacher_id)
+                            ->whereBetween('date', [$start->toDateString(), $end->toDateString()])
+                            ->where(function ($q) {
+                                $q->whereNotNull('check_in_time')
+                                    ->orWhereNotNull('check_out_time')
+                                    ->orWhere('check_in_status', 'H')
+                                    ->orWhere('check_out_status', 'H');
+                            })
+                            ->exists();
+
+                        if ($conflict) {
+                            Notification::make()
+                                ->title('Gagal menyetujui: ada absensi hadir pada periode tersebut')
+                                ->danger()
+                                ->send();
+                            return;
+                        }
+
+                        DB::transaction(function () use ($record, $start, $end): void {
+                            $statusCode = match ($record->type) {
+                                AttendanceRequest::TYPE_SICK => 'S',
+                                AttendanceRequest::TYPE_LEAVE => 'I',
+                                AttendanceRequest::TYPE_OUTSIDE => 'D',
+                                AttendanceRequest::TYPE_WFH => 'W',
+                                AttendanceRequest::TYPE_CUTI => 'C',
+                                default => 'I',
+                            };
+
+                            $period = new \DatePeriod($start, new \DateInterval('P1D'), $end->copy()->addDay());
+                            foreach ($period as $date) {
+                                Attendance::updateOrCreate(
+                                    [
+                                        'teacher_id' => $record->teacher_id,
+                                        'date' => $date->format('Y-m-d'),
+                                    ],
+                                    [
+                                        'check_in_status' => $statusCode,
+                                        'check_out_status' => $statusCode,
+                                        'check_in_time' => null,
+                                        'check_out_time' => null,
+                                        'late_minutes' => 0,
+                                        'early_leave_minutes' => 0,
+                                        'note' => $record->reason,
+                                    ],
+                                );
+                            }
 
                             $record->update([
                                 'status' => AttendanceRequest::STATUS_APPROVED,

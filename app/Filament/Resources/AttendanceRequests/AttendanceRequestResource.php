@@ -20,7 +20,7 @@ class AttendanceRequestResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
-    protected static ?string $recordTitleAttribute = 'date';
+    protected static ?string $recordTitleAttribute = 'start_date';
 
     public static function form(Schema $schema): Schema
     {

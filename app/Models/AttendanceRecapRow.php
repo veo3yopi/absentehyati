@@ -17,10 +17,16 @@ class AttendanceRecapRow extends Model
         'in_s',
         'in_i',
         'in_a',
+        'in_d',
+        'in_w',
+        'in_c',
         'out_h',
         'out_s',
         'out_i',
         'out_a',
+        'out_d',
+        'out_w',
+        'out_c',
     ];
 
     public function recap(): BelongsTo

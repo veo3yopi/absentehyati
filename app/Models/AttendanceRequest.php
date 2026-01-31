@@ -14,9 +14,18 @@ class AttendanceRequest extends Model
     public const STATUS_APPROVED = 'approved';
     public const STATUS_REJECTED = 'rejected';
 
+    public const TYPE_SICK = 'S';
+    public const TYPE_LEAVE = 'I';
+    public const TYPE_OUTSIDE = 'D';
+    public const TYPE_WFH = 'W';
+    public const TYPE_CUTI = 'C';
+
     protected $fillable = [
         'teacher_id',
+        'type',
         'date',
+        'start_date',
+        'end_date',
         'check_in_status',
         'check_in_submitted',
         'check_out_status',
@@ -30,6 +39,8 @@ class AttendanceRequest extends Model
 
     protected $casts = [
         'date' => 'date',
+        'start_date' => 'date',
+        'end_date' => 'date',
         'approved_at' => 'datetime',
         'check_in_submitted' => 'boolean',
         'check_out_submitted' => 'boolean',

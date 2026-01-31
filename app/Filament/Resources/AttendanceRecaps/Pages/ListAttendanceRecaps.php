@@ -150,10 +150,16 @@ class ListAttendanceRecaps extends ListRecords
                                 DB::raw("SUM(CASE WHEN check_in_status = 'S' THEN 1 ELSE 0 END) as in_s"),
                                 DB::raw("SUM(CASE WHEN check_in_status = 'I' THEN 1 ELSE 0 END) as in_i"),
                                 DB::raw("SUM(CASE WHEN check_in_status = 'A' THEN 1 ELSE 0 END) as in_a"),
+                                DB::raw("SUM(CASE WHEN check_in_status = 'D' THEN 1 ELSE 0 END) as in_d"),
+                                DB::raw("SUM(CASE WHEN check_in_status = 'W' THEN 1 ELSE 0 END) as in_w"),
+                                DB::raw("SUM(CASE WHEN check_in_status = 'C' THEN 1 ELSE 0 END) as in_c"),
                                 DB::raw("SUM(CASE WHEN check_out_status = 'H' THEN 1 ELSE 0 END) as out_h"),
                                 DB::raw("SUM(CASE WHEN check_out_status = 'S' THEN 1 ELSE 0 END) as out_s"),
                                 DB::raw("SUM(CASE WHEN check_out_status = 'I' THEN 1 ELSE 0 END) as out_i"),
                                 DB::raw("SUM(CASE WHEN check_out_status = 'A' THEN 1 ELSE 0 END) as out_a"),
+                                DB::raw("SUM(CASE WHEN check_out_status = 'D' THEN 1 ELSE 0 END) as out_d"),
+                                DB::raw("SUM(CASE WHEN check_out_status = 'W' THEN 1 ELSE 0 END) as out_w"),
+                                DB::raw("SUM(CASE WHEN check_out_status = 'C' THEN 1 ELSE 0 END) as out_c"),
                             ])
                             ->whereBetween('date', [$periodStart->toDateString(), $periodEnd->toDateString()])
                             ->groupBy('teacher_id')
@@ -171,10 +177,16 @@ class ListAttendanceRecaps extends ListRecords
                                 'in_s' => (int) ($row->in_s ?? 0),
                                 'in_i' => (int) ($row->in_i ?? 0),
                                 'in_a' => (int) ($row->in_a ?? 0),
+                                'in_d' => (int) ($row->in_d ?? 0),
+                                'in_w' => (int) ($row->in_w ?? 0),
+                                'in_c' => (int) ($row->in_c ?? 0),
                                 'out_h' => (int) ($row->out_h ?? 0),
                                 'out_s' => (int) ($row->out_s ?? 0),
                                 'out_i' => (int) ($row->out_i ?? 0),
                                 'out_a' => (int) ($row->out_a ?? 0),
+                                'out_d' => (int) ($row->out_d ?? 0),
+                                'out_w' => (int) ($row->out_w ?? 0),
+                                'out_c' => (int) ($row->out_c ?? 0),
                                 'created_at' => now(),
                                 'updated_at' => now(),
                             ];
