@@ -32,8 +32,8 @@
     }
     .pill {
         padding: 6px 12px;
-        background: #e0f2fe;
-        color: #075985;
+        background: #dcfce7;
+        color: #166534;
         border-radius: 999px;
         font-size: 12px;
         font-weight: 700;
@@ -56,24 +56,24 @@
     .tabs {
         display: inline-flex;
         gap: 6px;
-        background: #eef2ff;
-        border: 1px solid #e0e7ff;
+        background: #ecfdf3;
+        border: 1px solid #bbf7d0;
         padding: 6px;
         border-radius: 999px;
     }
     .tab {
         border: 0;
         background: transparent;
-        color: #1e3a8a;
+        color: #166534;
         font-weight: 700;
         padding: 8px 14px;
         border-radius: 999px;
         cursor: pointer;
     }
     .tab.active {
-        background: #1d4ed8;
+        background: #16a34a;
         color: #fff;
-        box-shadow: 0 8px 14px rgba(29, 78, 216, 0.25);
+        box-shadow: 0 8px 14px rgba(22, 163, 74, 0.25);
     }
     .tab[aria-disabled="true"] {
         opacity: 0.45;

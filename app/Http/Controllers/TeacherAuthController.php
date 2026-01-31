@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\SchoolSetting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -9,7 +10,9 @@ class TeacherAuthController extends Controller
 {
     public function showLogin()
     {
-        return view('guru.login');
+        $schoolSetting = SchoolSetting::query()->first();
+
+        return view('guru.login', compact('schoolSetting'));
     }
 
     public function login(Request $request)

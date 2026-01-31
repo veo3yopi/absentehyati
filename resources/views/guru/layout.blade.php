@@ -14,8 +14,8 @@
             --ink-2: #334155;
             --muted: #64748b;
             --line: #e2e8f0;
-            --brand-1: #1d4ed8;
-            --brand-2: #0ea5e9;
+            --brand-1: #16a34a;
+            --brand-2: #22c55e;
             --shadow-2: 0 6px 16px rgba(15, 23, 42, 0.08);
             --radius-1: 14px;
         }
@@ -24,8 +24,8 @@
         body {
             font-family: 'Manrope', sans-serif;
             background:
-                radial-gradient(1200px 400px at 15% -10%, rgba(14, 165, 233, 0.18), transparent 60%),
-                radial-gradient(900px 360px at 90% 0%, rgba(29, 78, 216, 0.20), transparent 60%),
+                radial-gradient(1200px 400px at 15% -10%, rgba(34, 197, 94, 0.18), transparent 60%),
+                radial-gradient(900px 360px at 90% 0%, rgba(16, 185, 129, 0.20), transparent 60%),
                 var(--bg-0);
             color: var(--ink-1);
             margin: 0;
@@ -89,10 +89,10 @@
             border: 1px solid transparent;
             transition: background 120ms ease, color 120ms ease;
         }
-        .menu a.active {
-            background: #eef2ff;
-            color: #1d4ed8;
-            border-color: #e0e7ff;
+            .menu a.active {
+            background: #ecfdf3;
+            color: #15803d;
+            border-color: #bbf7d0;
         }
 
         .actions {
@@ -205,7 +205,7 @@
                 font-size: 11px;
                 color: #64748b;
             }
-            .mobile-bottom-nav a.active { color: #2563eb; }
+            .mobile-bottom-nav a.active { color: #16a34a; }
             .mobile-bottom-nav svg {
                 width: 20px;
                 height: 20px;
