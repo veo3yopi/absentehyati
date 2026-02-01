@@ -139,7 +139,13 @@ class TeacherDashboardController extends Controller
         $now = now();
         $lateMinutes = 0;
         $startTime = $setting?->start_time?->format('H:i') ?? '07:00';
+        $endTime = $setting?->end_time?->format('H:i') ?? '16:00';
         $tolerance = $setting?->late_tolerance_minutes ?? 15;
+
+        if ($now->isAfter($now->copy()->setTimeFromTimeString($endTime))) {
+            return back()->withErrors(['check_in_status' => 'Waktu absen masuk sudah berakhir.']);
+        }
+
         $start = $now->copy()->setTimeFromTimeString($startTime);
         $diff = $now->diffInMinutes($start, false);
         if ($diff < 0) {
@@ -155,6 +161,7 @@ class TeacherDashboardController extends Controller
             'check_in_status' => $data['check_in_status'],
             'check_in_time' => $now,
             'late_minutes' => $lateMinutes,
+            'check_in_remark' => $lateMinutes > 0 ? 'LATE' : 'ON_TIME',
         ];
 
         if ($attendance) {
@@ -201,6 +208,7 @@ class TeacherDashboardController extends Controller
             'check_out_status' => $data['check_out_status'],
             'check_out_time' => $now,
             'early_leave_minutes' => $earlyLeaveMinutes,
+            'check_out_remark' => $earlyLeaveMinutes > 0 ? 'EARLY_LEAVE' : 'ON_TIME',
         ]);
 
         return redirect()->route('guru.absen.page')->with('status', 'Absen pulang berhasil dikirim.');
