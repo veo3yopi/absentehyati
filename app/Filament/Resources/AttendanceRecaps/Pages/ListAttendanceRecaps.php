@@ -176,6 +176,9 @@ class ListAttendanceRecaps extends ListRecords
                                 'W' => 0,
                                 'C' => 0,
                             ];
+                            $lateDays = 0;
+                            $onTimeDays = 0;
+                            $lateMinutesTotal = 0;
 
                             $teacherAttendance = $attendanceByTeacher->get($teacher->id, collect());
                             foreach ($dates as $date) {
@@ -200,6 +203,17 @@ class ListAttendanceRecaps extends ListRecords
                                 }
 
                                 $counts[$status] = ($counts[$status] ?? 0) + 1;
+
+                                if ($status === 'H' && $attendance) {
+                                    $lateMinutes = (int) ($attendance->late_minutes ?? 0);
+
+                                    if ($lateMinutes > 0) {
+                                        $lateDays++;
+                                        $lateMinutesTotal += $lateMinutes;
+                                    } else {
+                                        $onTimeDays++;
+                                    }
+                                }
                             }
 
                             $rows[] = [
@@ -219,6 +233,9 @@ class ListAttendanceRecaps extends ListRecords
                                 'out_d' => 0,
                                 'out_w' => 0,
                                 'out_c' => 0,
+                                'late_days' => $lateDays,
+                                'on_time_days' => $onTimeDays,
+                                'late_minutes_total' => $lateMinutesTotal,
                                 'created_at' => now(),
                                 'updated_at' => now(),
                             ];
@@ -238,7 +255,7 @@ class ListAttendanceRecaps extends ListRecords
                     }
 
                     $recap->load(['rows.teacher', 'generator']);
-                    $fileBase = 'rekap-absensi-' . ($recap->academic_year ?? 'periode') . '-' . ($recap->semester ?? '');
+                    $fileBase = 'rekap-absensi-' . ($recap->academic_year ?? 'periode') . '-' . ($recap->semester ?? '') . '-' . now()->format('Ymd-His');
                     $filename = Str::slug($fileBase, '-') . '.pdf';
 
                     $html = view('admin.attendance_recaps.pdf', [

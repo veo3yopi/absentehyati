@@ -58,7 +58,7 @@ class AttendanceRecapResource extends Resource
                         $record->load(['rows.teacher', 'generator']);
                         $setting = SchoolSetting::query()->first();
 
-                        $fileBase = 'rekap-absensi-' . ($record->academic_year ?? 'periode') . '-' . ($record->semester ?? '');
+                        $fileBase = 'rekap-absensi-' . ($record->academic_year ?? 'periode') . '-' . ($record->semester ?? '') . '-' . now()->format('Ymd-His');
                         $filename = Str::slug($fileBase, '-') . '.pdf';
 
                         $html = view('admin.attendance_recaps.pdf', [

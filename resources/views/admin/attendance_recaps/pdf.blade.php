@@ -32,6 +32,9 @@
         $totals = [
             'H' => 0, 'S' => 0, 'I' => 0, 'A' => 0, 'D' => 0, 'W' => 0, 'C' => 0,
         ];
+        $lateDaysAll = 0;
+        $onTimeDaysAll = 0;
+        $lateMinutesAll = 0;
         foreach ($rows as $row) {
             $totals['H'] += (int) ($row->in_h ?? 0);
             $totals['S'] += (int) ($row->in_s ?? 0);
@@ -40,6 +43,9 @@
             $totals['D'] += (int) ($row->in_d ?? 0);
             $totals['W'] += (int) ($row->in_w ?? 0);
             $totals['C'] += (int) ($row->in_c ?? 0);
+            $lateDaysAll += (int) ($row->late_days ?? 0);
+            $lateMinutesAll += (int) ($row->late_minutes_total ?? 0);
+            $onTimeDaysAll += (int) ($row->on_time_days ?? max(((int) ($row->in_h ?? 0)) - ((int) ($row->late_days ?? 0)), 0));
         }
         $totalDaysAll = array_sum($totals);
     @endphp
@@ -69,6 +75,16 @@
                 <td>{{ $totalDaysAll > 0 ? round(($totals['H'] / $totalDaysAll) * 100, 1) : 0 }}%</td>
             </tr>
             <tr>
+                <td class="label">Terlambat (hari)</td>
+                <td>{{ $lateDaysAll }}</td>
+                <td class="label">Tepat Waktu (hari)</td>
+                <td>{{ $onTimeDaysAll }}</td>
+                <td class="label">Menit Terlambat</td>
+                <td>{{ $lateMinutesAll }}</td>
+                <td class="label">% Tepat Waktu</td>
+                <td>{{ $totals['H'] > 0 ? round(($onTimeDaysAll / $totals['H']) * 100, 1) : 0 }}%</td>
+            </tr>
+            <tr>
                 <td class="label">Sakit</td>
                 <td>{{ $totals['S'] }}</td>
                 <td class="label">Izin</td>
@@ -95,8 +111,11 @@
             <th>D</th>
             <th>W</th>
             <th>C</th>
+            <th>TL (Hari)</th>
+            <th>TL (Menit)</th>
             <th>Total</th>
             <th>% Hadir</th>
+            <th>% Tepat Waktu</th>
         </tr>
         </thead>
         <tbody>
@@ -104,6 +123,10 @@
             @php
                 $total = (int) $row->in_h + (int) $row->in_s + (int) $row->in_i + (int) $row->in_a + (int) $row->in_d + (int) $row->in_w + (int) $row->in_c;
                 $percent = $total > 0 ? round(($row->in_h / $total) * 100, 1) : 0;
+                $lateDays = (int) ($row->late_days ?? 0);
+                $lateMinutes = (int) ($row->late_minutes_total ?? 0);
+                $onTimeDays = (int) ($row->on_time_days ?? max(((int) ($row->in_h ?? 0)) - $lateDays, 0));
+                $onTimePercent = ((int) $row->in_h) > 0 ? round(($onTimeDays / (int) $row->in_h) * 100, 1) : 0;
             @endphp
             <tr>
                 <td>{{ $loop->iteration }}</td>
@@ -115,12 +138,15 @@
                 <td>{{ $row->in_d }}</td>
                 <td>{{ $row->in_w }}</td>
                 <td>{{ $row->in_c }}</td>
+                <td>{{ $lateDays }}</td>
+                <td>{{ $lateMinutes }}</td>
                 <td class="highlight">{{ $total }}</td>
                 <td class="highlight">{{ $percent }}%</td>
+                <td class="highlight">{{ $onTimePercent }}%</td>
             </tr>
         @empty
             <tr>
-                <td class="left" colspan="11">Belum ada data rekap.</td>
+                <td class="left" colspan="14">Belum ada data rekap.</td>
             </tr>
         @endforelse
         </tbody>
@@ -131,7 +157,7 @@
         @if(!empty($recap->generator?->name))
             &middot; Oleh: {{ $recap->generator->name }}
         @endif
-        &middot; Keterangan: H=Hadir, S=Sakit, I=Izin, A=Alpa, D=Dinas, W=WFH, C=Cuti
+        &middot; Keterangan: H=Hadir, S=Sakit, I=Izin, A=Alfa, D=Dinas, W=WFH, C=Cuti, TL=Terlambat, TT=Tidak Terlambat
     </div>
 </body>
 </html>

@@ -27,6 +27,15 @@ class AttendanceRecapRow extends Model
         'out_d',
         'out_w',
         'out_c',
+        'late_days',
+        'on_time_days',
+        'late_minutes_total',
+    ];
+
+    protected $casts = [
+        'late_days' => 'integer',
+        'on_time_days' => 'integer',
+        'late_minutes_total' => 'integer',
     ];
 
     public function recap(): BelongsTo
